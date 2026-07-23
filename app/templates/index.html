@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ app_name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}">
+</head>
+<body>
+    <main class="page-shell">
+        <header class="hero">
+            <span class="eyebrow">Monitoramento para assessorias</span>
+            <h1>Oylut Clipping</h1>
+            <p>Localize menções em notícias, redes sociais e vídeos sem eliminar publicações repetidas entre fontes.</p>
+        </header>
+
+        <section class="search-card" aria-labelledby="search-title">
+            <div>
+                <h2 id="search-title">Novo monitoramento</h2>
+                <p>Cadastre o termo principal e as formas pelas quais ele pode aparecer.</p>
+            </div>
+
+            <form>
+                <label for="term">Termo principal</label>
+                <input id="term" name="term" type="text" placeholder="Ex.: TCE-PB" disabled>
+
+                <label for="variations">Variações</label>
+                <textarea id="variations" name="variations" rows="4" placeholder="Ex.: Tribunal de Contas da Paraíba" disabled></textarea>
+
+                <label for="period">Período</label>
+                <select id="period" name="period" disabled>
+                    <option>Últimas 24 horas</option>
+                </select>
+
+                <button type="button" disabled>Pesquisar menções</button>
+                <small>A busca será ativada na Sprint 2, após a integração dos primeiros coletores.</small>
+            </form>
+        </section>
+
+        <section class="principle">
+            <strong>Regra editorial:</strong>
+            cada publicação encontrada será preservada como uma menção individual.
+        </section>
+    </main>
+</body>
+</html>
