@@ -87,6 +87,78 @@
     background: #2a1719;
 }
 
+.client-actions {
+    grid-template-columns: minmax(0, 1fr) 52px;
+    align-items: end;
+}
+
+.client-actions .primary-action {
+    grid-column: 1 / -1;
+}
+
+.client-inline-edit {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 52px;
+    gap: 10px;
+    min-width: 0;
+}
+
+.client-inline-edit input {
+    min-width: 0;
+    width: 100%;
+    padding: 12px 14px;
+}
+
+.delete-client-form {
+    display: block;
+}
+
+.icon-action {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    border: 1px solid #3b4350;
+    border-radius: 14px;
+    background: #1a1f26;
+    color: #f4f6fb;
+    cursor: pointer;
+}
+
+.icon-action svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.save-action:hover,
+.save-action:focus-visible {
+    background: #242a33;
+}
+
+.danger-action {
+    color: #ffd9dd;
+    border-color: #6d3037;
+    background: #2a1719;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 .history-row {
     display: flex;
     justify-content: space-between;
