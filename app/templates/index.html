@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="{{ url_for('static', path='/css/compact.css') }}?v=0.7.0">
     <link rel="stylesheet" href="{{ url_for('static', path='/css/management.css') }}?v=0.7.0">
     <link rel="stylesheet" href="{{ url_for('static', path='/css/drawer.css') }}?v=0.7.0">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/sprint5.css') }}?v=0.7.0">
 </head>
 <body class="app-body">
     {% include "_drawer.html" %}
@@ -28,16 +29,12 @@
                     <option value="">Selecione</option>
                     {% for client in clients if client.is_active %}<option value="{{ client.id }}">{{ client.name }}</option>{% endfor %}
                 </select>
-
                 <label for="name">Nome do monitoramento</label>
                 <input id="name" name="name" type="text" required minlength="2" placeholder="Ex.: Institucional">
-
                 <label for="main_term">Termo principal</label>
                 <input id="main_term" name="main_term" type="text" required minlength="2" placeholder="Ex.: TCE-PB">
-
                 <label for="secondary_terms">Termos secundários <span class="optional">um por linha</span></label>
                 <textarea id="secondary_terms" name="secondary_terms" rows="5" placeholder="Tribunal de Contas da Paraíba&#10;Tribunal de Contas do Estado"></textarea>
-
                 <button type="submit" class="primary-button" data-loading-text="Criando monitoramento...">Criar monitoramento</button>
             </form>
             {% else %}
@@ -51,32 +48,22 @@
 
         <section class="home-clients-section">
             <div class="section-title-row">
-                <div>
-                    <span class="screen-kicker">GESTÃO</span>
-                    <h2>Clientes</h2>
-                </div>
+                <div><span class="screen-kicker">GESTÃO</span><h2>Clientes</h2></div>
                 <a href="/clientes" class="text-link">Ver todos</a>
             </div>
-
             {% if clients %}
             <div class="home-client-list">
                 {% for client in clients %}
                 <a class="home-client-row" href="/clientes/{{ client.id }}">
                     <span class="client-avatar">{{ client.name[:1]|upper }}</span>
-                    <span class="client-info">
-                        <strong>{{ client.name }}</strong>
-                        <small>{{ 'Ativo' if client.is_active else 'Inativo' }}</small>
-                    </span>
+                    <span class="client-info"><strong>{{ client.name }}</strong><small>{{ 'Ativo' if client.is_active else 'Inativo' }}</small></span>
                     <span class="row-arrow">›</span>
                 </a>
                 {% endfor %}
             </div>
-            {% else %}
-            <div class="empty-compact">Nenhum cliente cadastrado.</div>
-            {% endif %}
+            {% else %}<div class="empty-compact">Nenhum cliente cadastrado.</div>{% endif %}
         </section>
     </main>
-
     <script>
         document.querySelectorAll('.submit-lock-form').forEach((form) => {
             form.addEventListener('submit', () => {
