@@ -4,6 +4,7 @@
 
 .workspace-header {
     margin-bottom: 22px;
+    padding-left: 76px;
 }
 
 .workspace-header h1 {
@@ -113,6 +114,11 @@
 @media (max-width: 720px) {
     .home-workspace {
         padding-top: max(24px, env(safe-area-inset-top));
+    }
+
+    .workspace-header {
+        min-height: 86px;
+        padding-left: 96px;
     }
 
     .workspace-form-card {
