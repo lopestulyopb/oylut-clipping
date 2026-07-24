@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>{{ page_title }} | Oylut Clipping</title>
+    <link rel="stylesheet" href="/static/css/app.css?v=0.6.2">
+    <link rel="stylesheet" href="/static/css/compact.css?v=0.6.2">
+</head>
+<body>
+    {% include "_drawer.html" %}
+    <main class="page-shell compact-shell drawer-page">
+        <header class="simple-brand info-header">
+            <a href="/" class="back-link">← Início</a>
+            <span class="eyebrow">{{ page_kicker }}</span>
+            <h1>{{ page_title }}</h1>
+        </header>
+
+        <section class="info-card">
+            {% if page_content %}
+                {% for paragraph in page_content %}<p>{{ paragraph }}</p>{% endfor %}
+            {% endif %}
+            {% if steps %}
+                <ol class="instruction-list">
+                    {% for step in steps %}<li>{{ step }}</li>{% endfor %}
+                </ol>
+            {% endif %}
+            {% if page_title == 'Minha Conta' %}
+                <dl class="account-summary">
+                    <div><dt>Produto</dt><dd>Oylut Clipping</dd></div>
+                    <div><dt>Versão</dt><dd>{{ version }}</dd></div>
+                </dl>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>
