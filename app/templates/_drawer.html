@@ -2,41 +2,14 @@
 <label class="drawer-open" for="drawer-toggle" aria-label="Abrir menu">☰</label>
 <label class="drawer-backdrop" for="drawer-toggle" aria-label="Fechar menu"></label>
 <aside class="app-drawer" aria-label="Menu principal">
-    <div class="drawer-header">
-        <strong>Oylut Clipping</strong>
-        <label for="drawer-toggle" class="drawer-close" aria-label="Fechar menu">×</label>
-    </div>
+    <div class="drawer-header"><strong>Oylut Clipping</strong><label for="drawer-toggle" class="drawer-close" aria-label="Fechar menu">×</label></div>
     <nav class="drawer-nav">
-        <a href="/"><span>⌂</span> Home</a>
-        <a href="/minha-conta"><span>●</span> Minha Conta</a>
-        <a href="/nosso-proposito"><span>◎</span> Nosso propósito</a>
-        <a href="/instrucoes"><span>i</span> Instruções</a>
-        <a href="/clientes"><span>C</span> Clientes</a>
-        <a href="/historico"><span>H</span> Histórico</a>
-        <a href="/clippings"><span>▤</span> Clippings</a>
+        <a href="/"><span>⌂</span> Home</a><a href="/minha-conta"><span>●</span> Minha Conta</a><a href="/nosso-proposito"><span>◎</span> Nosso propósito</a><a href="/instrucoes"><span>i</span> Instruções</a><a href="/clientes"><span>C</span> Clientes</a><a href="/historico"><span>H</span> Histórico</a><a href="/clippings"><span>▤</span> Clippings</a><a href="/agendamentos"><span>◷</span> Agendamentos</a>
     </nav>
-    <div class="drawer-footer">
-        <strong>Oylut Clipping</strong>
-        <small>Versão 0.9.0</small>
-    </div>
+    <div class="drawer-footer"><strong>Oylut Clipping</strong><small>Versão 1.0.0</small></div>
 </aside>
 <script>
 (() => {
-    const header = document.querySelector('.results-header');
-    const backLink = document.querySelector('.results-header')?.previousElementSibling?.querySelector('.back-link');
-    if (!header || !backLink || !backLink.textContent.includes('Início')) return;
-    if (localStorage.getItem('oylutSaveQuickSearches') !== 'true') return;
-    const firstCard = document.querySelector('.mention-card');
-    const term = firstCard?.dataset.term || firstCard?.querySelector('.mention-footer strong')?.textContent?.trim();
-    if (!term) return;
-    const periodLabel = header.querySelector('.eyebrow')?.textContent.trim() || 'Últimas 24 horas';
-    const periodMap = {'Últimas 24 horas': 24, 'Últimas 48 horas': 48, 'Últimos 7 dias': 168, 'Últimos 30 dias': 720};
-    const total = Number(document.getElementById('visible-count')?.textContent || header.querySelector('h1')?.textContent.match(/\d+/)?.[0] || 0);
-    const storageKey = 'oylutQuickSearchHistory';
-    const history = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    const fingerprint = `${term.toLocaleLowerCase('pt-BR')}|${periodLabel}|${total}`;
-    if (history[0]?.fingerprint === fingerprint && Date.now() - history[0].timestamp < 60000) return;
-    history.unshift({id:`quick-${Date.now()}`,fingerprint,mainTerm:term,variations:[],periodHours:periodMap[periodLabel]||24,periodLabel,resultCount:total,timestamp:Date.now()});
-    localStorage.setItem(storageKey, JSON.stringify(history.slice(0, 30)));
+    const header=document.querySelector('.results-header');const backLink=header?.previousElementSibling?.querySelector('.back-link');if(!header||!backLink||!backLink.textContent.includes('Início'))return;if(localStorage.getItem('oylutSaveQuickSearches')!=='true')return;const firstCard=document.querySelector('.mention-card');const term=firstCard?.dataset.term||firstCard?.querySelector('.mention-footer strong')?.textContent?.trim();if(!term)return;const periodLabel=header.querySelector('.eyebrow')?.textContent.trim()||'Últimas 24 horas';const periodMap={'Últimas 24 horas':24,'Últimas 48 horas':48,'Últimos 7 dias':168,'Últimos 30 dias':720};const total=Number(document.getElementById('visible-count')?.textContent||header.querySelector('h1')?.textContent.match(/\d+/)?.[0]||0);const storageKey='oylutQuickSearchHistory';const history=JSON.parse(localStorage.getItem(storageKey)||'[]');const fingerprint=`${term.toLocaleLowerCase('pt-BR')}|${periodLabel}|${total}`;if(history[0]?.fingerprint===fingerprint&&Date.now()-history[0].timestamp<60000)return;history.unshift({id:`quick-${Date.now()}`,fingerprint,mainTerm:term,variations:[],periodHours:periodMap[periodLabel]||24,periodLabel,resultCount:total,timestamp:Date.now()});localStorage.setItem(storageKey,JSON.stringify(history.slice(0,30)));
 })();
 </script>
