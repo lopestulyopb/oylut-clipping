@@ -11,10 +11,14 @@ class SupabaseDatabase:
         if not settings.supabase_url or not settings.supabase_service_role_key:
             raise RuntimeError("SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY precisam estar configuradas.")
 
-        self.base_url = f"{settings.supabase_url.rstrip('/')}/rest/v1"
+        supabase_url = settings.supabase_url.strip().rstrip("/")
+        if not supabase_url.startswith(("http://", "https://")):
+            supabase_url = f"https://{supabase_url}"
+
+        self.base_url = f"{supabase_url}/rest/v1"
         self.headers = {
-            "apikey": settings.supabase_service_role_key,
-            "Authorization": f"Bearer {settings.supabase_service_role_key}",
+            "apikey": settings.supabase_service_role_key.strip(),
+            "Authorization": f"Bearer {settings.supabase_service_role_key.strip()}",
             "Content-Type": "application/json",
         }
 
