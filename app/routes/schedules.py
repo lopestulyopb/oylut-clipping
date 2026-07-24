@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import httpx
@@ -21,15 +22,45 @@ async def schedules_page(request: Request) -> HTMLResponse:
         setup_pending = False
     except (httpx.HTTPError, RuntimeError):
         schedules, monitorings, setup_pending = [], [], True
-    return templates.TemplateResponse(request=request, name="schedules.html", context={"schedules": schedules, "monitorings": monitorings, "setup_pending": setup_pending})
+    return templates.TemplateResponse(
+        request=request,
+        name="schedules.html",
+        context={
+            "schedules": schedules,
+            "monitorings": monitorings,
+            "setup_pending": setup_pending,
+        },
+    )
 
 
 @router.post("/agendamentos")
 async def create_schedule(
-    monitoring_id: str = Form(...), frequency: str = Form(...), weekday: int | None = Form(None),
-    run_time: str = Form(...), start_date: str = Form(...), end_date: str = Form(""), period_hours: int = Form(24),
+    monitoring_id: str = Form(...),
+    start_date: str = Form(...),
+    end_date: str = Form(""),
+    start_time: str = Form(...),
+    end_time: str = Form(...),
 ) -> RedirectResponse:
-    await schedule_service.create({"monitoring_id": monitoring_id, "frequency": frequency, "weekday": weekday if frequency == "weekly" else None, "run_time": run_time, "start_date": start_date, "end_date": end_date or None, "period_hours": period_hours, "timezone": "America/Fortaleza", "is_active": True})
+    start_clock = datetime.strptime(start_time, "%H:%M")
+    end_clock = datetime.strptime(end_time, "%H:%M")
+    if end_clock <= start_clock:
+        end_clock += timedelta(days=1)
+    period_hours = max(1, int((end_clock - start_clock).total_seconds() // 3600))
+
+    await schedule_service.create(
+        {
+            "monitoring_id": monitoring_id,
+            "frequency": "daily",
+            "weekday": None,
+            "window_start_time": start_time,
+            "run_time": end_time,
+            "start_date": start_date,
+            "end_date": end_date or None,
+            "period_hours": period_hours,
+            "timezone": "America/Fortaleza",
+            "is_active": True,
+        }
+    )
     return RedirectResponse(url="/agendamentos", status_code=303)
 
 
