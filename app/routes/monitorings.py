@@ -1,4 +1,5 @@
 from pathlib import Path
+from urllib.parse import quote
 
 import httpx
 from fastapi import APIRouter, Form, Request
@@ -15,7 +16,7 @@ router = APIRouter(prefix="/clientes", tags=["monitoramentos"])
 
 @router.get("/{client_id}", response_class=HTMLResponse)
 async def client_monitorings_page(request: Request, client_id: str) -> HTMLResponse:
-    error = None
+    error = request.query_params.get("erro")
     try:
         client = await client_service.get_client(client_id)
         monitorings = await monitoring_service.list_by_client(client_id)
@@ -36,7 +37,24 @@ async def client_monitorings_page(request: Request, client_id: str) -> HTMLRespo
 
 @router.post("/{client_id}/monitoramentos")
 async def create_monitoring(client_id: str, name: str = Form(...)) -> RedirectResponse:
-    await monitoring_service.create(client_id=client_id, name=name)
+    try:
+        await monitoring_service.create(client_id=client_id, name=name)
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code == 409:
+            message = "Já existe um monitoramento com esse nome para este cliente."
+        else:
+            message = "Não foi possível cadastrar o monitoramento."
+        return RedirectResponse(
+            url=f"/clientes/{client_id}?erro={quote(message)}",
+            status_code=303,
+        )
+    except (httpx.HTTPError, RuntimeError):
+        message = "Não foi possível cadastrar o monitoramento. Tente novamente."
+        return RedirectResponse(
+            url=f"/clientes/{client_id}?erro={quote(message)}",
+            status_code=303,
+        )
+
     return RedirectResponse(url=f"/clientes/{client_id}", status_code=303)
 
 
@@ -46,7 +64,18 @@ async def edit_monitoring(
     monitoring_id: str,
     name: str = Form(...),
 ) -> RedirectResponse:
-    await monitoring_service.update_name(monitoring_id, name)
+    try:
+        await monitoring_service.update_name(monitoring_id, name)
+    except httpx.HTTPStatusError as exc:
+        message = (
+            "Já existe um monitoramento com esse nome para este cliente."
+            if exc.response.status_code == 409
+            else "Não foi possível editar o monitoramento."
+        )
+        return RedirectResponse(
+            url=f"/clientes/{client_id}?erro={quote(message)}",
+            status_code=303,
+        )
     return RedirectResponse(url=f"/clientes/{client_id}", status_code=303)
 
 
