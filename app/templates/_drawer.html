@@ -16,6 +16,38 @@
     </nav>
     <div class="drawer-footer">
         <strong>Oylut Clipping</strong>
-        <small>Versão 0.7.1</small>
+        <small>Versão 0.8.0</small>
     </div>
 </aside>
+<script>
+(() => {
+    const header = document.querySelector('.results-header');
+    const backLink = document.querySelector('.results-header')?.previousElementSibling?.querySelector('.back-link');
+    if (!header || !backLink || !backLink.textContent.includes('Início')) return;
+    if (localStorage.getItem('oylutSaveQuickSearches') !== 'true') return;
+
+    const firstCard = document.querySelector('.mention-card');
+    const term = firstCard?.dataset.term || firstCard?.querySelector('.mention-footer strong')?.textContent?.trim();
+    if (!term) return;
+
+    const periodLabel = header.querySelector('.eyebrow')?.textContent.trim() || 'Últimas 24 horas';
+    const periodMap = {'Últimas 24 horas': 24, 'Últimas 48 horas': 48, 'Últimos 7 dias': 168, 'Últimos 30 dias': 720};
+    const total = Number(document.getElementById('visible-count')?.textContent || header.querySelector('h1')?.textContent.match(/\d+/)?.[0] || 0);
+    const storageKey = 'oylutQuickSearchHistory';
+    const history = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    const fingerprint = `${term.toLocaleLowerCase('pt-BR')}|${periodLabel}|${total}`;
+    if (history[0]?.fingerprint === fingerprint && Date.now() - history[0].timestamp < 60000) return;
+
+    history.unshift({
+        id: `quick-${Date.now()}`,
+        fingerprint,
+        mainTerm: term,
+        variations: [],
+        periodHours: periodMap[periodLabel] || 24,
+        periodLabel,
+        resultCount: total,
+        timestamp: Date.now()
+    });
+    localStorage.setItem(storageKey, JSON.stringify(history.slice(0, 30)));
+})();
+</script>
