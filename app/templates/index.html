@@ -4,30 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{{ app_name }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}?v=0.6.1">
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/compact.css') }}?v=0.6.1">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}?v=0.6.2">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/compact.css') }}?v=0.6.2">
 </head>
 <body>
-    <main class="page-shell compact-shell">
+    {% include "_drawer.html" %}
+    <main class="page-shell compact-shell drawer-page home-main">
         <header class="simple-brand home-header">
             <h1>Oylut Clipping</h1>
         </header>
 
-        <section class="dashboard-grid" aria-label="Menu principal">
+        <section class="home-primary-action" aria-label="Ação principal">
             <a class="dashboard-action dashboard-primary" href="/novo-monitoramento">
                 <span class="dashboard-icon">＋</span>
                 <strong>Novo monitoramento</strong>
                 <small>Cadastre cliente, monitoramento e termos.</small>
-            </a>
-            <a class="dashboard-action" href="/clientes">
-                <span class="dashboard-icon">C</span>
-                <strong>Clientes</strong>
-                <small>Acesse clientes e monitoramentos.</small>
-            </a>
-            <a class="dashboard-action" href="/historico">
-                <span class="dashboard-icon">H</span>
-                <strong>Histórico</strong>
-                <small>Reabra pesquisas já realizadas.</small>
             </a>
         </section>
     </main>
