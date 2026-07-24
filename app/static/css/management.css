@@ -81,6 +81,39 @@
     width: 100%;
 }
 
+.danger-button {
+    color: #ffd9dd;
+    border-color: #6d3037;
+    background: #2a1719;
+}
+
+.history-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 18px;
+    color: #f4f6fb;
+    background: #161a20;
+    border: 1px solid #343b46;
+    border-radius: 17px;
+    text-decoration: none;
+}
+
+.history-main,
+.history-meta {
+    display: grid;
+    gap: 5px;
+}
+
+.history-main small,
+.history-meta small {
+    color: #8e96a3;
+}
+
+.history-meta {
+    text-align: right;
+}
+
 @media (max-width: 620px) {
     .inline-edit,
     .inline-edit.single-field {
@@ -88,4 +121,6 @@
     }
 
     .inline-edit .text-button { width: 100%; }
+    .history-row { align-items: flex-start; flex-direction: column; }
+    .history-meta { text-align: left; }
 }
