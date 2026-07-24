@@ -7,16 +7,15 @@
     <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}">
 </head>
 <body>
-    <main class="page-shell">
-        <nav class="topbar">
+    <main class="page-shell compact-shell">
+        <nav class="topbar compact-topbar">
             <a class="back-link" href="/">← Nova pesquisa</a>
-            <span>{{ app_name }}</span>
+            <span>Oylut Clipping</span>
         </nav>
 
-        <header class="results-header">
+        <header class="results-header compact-results-header">
             <span class="eyebrow">Últimas {{ period_hours }} horas</span>
             <h1>{{ total }} menções</h1>
-            <p>Termos pesquisados: {{ terms | join(', ') }}</p>
         </header>
 
         <div class="filter-row" aria-label="Filtros por tipo de mídia">
@@ -33,18 +32,22 @@
         {% if mentions %}
             <section class="results-list" aria-label="Menções encontradas">
                 {% for mention in mentions %}
-                    <article class="mention-card" data-media-type="{{ mention.media_type.value }}">
+                    <article class="mention-card compact-mention-card" data-media-type="{{ mention.media_type.value }}">
                         <div class="mention-meta">
                             <span class="media-badge">Notícia</span>
                             <span>{{ mention.source }}</span>
                         </div>
+
                         <h2>{{ mention.title }}</h2>
+
                         {% if mention.published_at %}
                             <p class="published-at">Publicado em {{ mention.published_at.strftime('%d/%m/%Y às %H:%M') }}</p>
                         {% endif %}
-                        {% if mention.excerpt %}
+
+                        {% if mention.excerpt and mention.excerpt|striptags|trim != mention.title|trim %}
                             <p class="excerpt">{{ mention.excerpt | striptags }}</p>
                         {% endif %}
+
                         <div class="mention-footer">
                             <span>Termo pesquisado: <strong>{{ mention.searched_term }}</strong></span>
                             <a href="{{ mention.url }}" target="_blank" rel="noopener noreferrer">Abrir conteúdo ↗</a>
@@ -55,8 +58,7 @@
         {% else %}
             <section class="empty-state">
                 <h2>Nenhuma menção encontrada</h2>
-                <p>Tente incluir outras variações do termo ou aumentar o período da pesquisa.</p>
-                <a class="primary-link" href="/">Fazer nova pesquisa</a>
+                <a class="primary-link" href="/">Nova pesquisa</a>
             </section>
         {% endif %}
     </main>
