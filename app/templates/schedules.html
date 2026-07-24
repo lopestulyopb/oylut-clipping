@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <title>Automação | Oylut Clipping</title>
-    <link rel="stylesheet" href="/static/css/app.css?v=1.0.2">
-    <link rel="stylesheet" href="/static/css/management.css?v=1.0.2">
-    <link rel="stylesheet" href="/static/css/drawer.css?v=1.0.2">
-    <link rel="stylesheet" href="/static/css/schedules.css?v=1.0.2">
+    <link rel="stylesheet" href="/static/css/app.css?v=1.0.3">
+    <link rel="stylesheet" href="/static/css/management.css?v=1.0.3">
+    <link rel="stylesheet" href="/static/css/drawer.css?v=1.0.3">
+    <link rel="stylesheet" href="/static/css/schedules.css?v=1.0.3">
 </head>
 <body class="app-body automation-page">
 {% include "_drawer.html" %}
@@ -44,11 +44,12 @@
                 <label>
                     Data de início
                     <input type="date" name="start_date" required>
+                    <small class="field-help field-help-placeholder" aria-hidden="true">Espaço reservado</small>
                 </label>
                 <label>
                     Data de término
                     <input type="date" name="end_date">
-                    <small>Opcional. Sem data final, o clipping continua ativo.</small>
+                    <small class="field-help">Opcional. Sem data final, o clipping continua ativo.</small>
                 </label>
             </div>
 
@@ -56,11 +57,12 @@
                 <label>
                     Hora de início
                     <input type="time" name="start_time" required>
+                    <small class="field-help field-help-placeholder" aria-hidden="true">Espaço reservado</small>
                 </label>
                 <label>
                     Hora de término
                     <input type="time" name="end_time" required>
-                    <small>O clipping será gerado neste horário.</small>
+                    <small class="field-help">O clipping será gerado neste horário.</small>
                 </label>
             </div>
 
