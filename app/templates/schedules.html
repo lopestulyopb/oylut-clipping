@@ -4,21 +4,20 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <title>Automação | Oylut Clipping</title>
-    <link rel="stylesheet" href="/static/css/app.css?v=1.0.1">
-    <link rel="stylesheet" href="/static/css/management.css?v=1.0.1">
-    <link rel="stylesheet" href="/static/css/drawer.css?v=1.0.1">
-    <link rel="stylesheet" href="/static/css/schedules.css?v=1.0.1">
+    <link rel="stylesheet" href="/static/css/app.css?v=1.0.2">
+    <link rel="stylesheet" href="/static/css/management.css?v=1.0.2">
+    <link rel="stylesheet" href="/static/css/drawer.css?v=1.0.2">
+    <link rel="stylesheet" href="/static/css/schedules.css?v=1.0.2">
 </head>
-<body class="app-body">
+<body class="app-body automation-page">
 {% include "_drawer.html" %}
-<header class="app-header">
-    <a href="/" class="icon-button" aria-label="Voltar">←</a>
+<header class="app-header app-header-with-menu">
     <div class="brand-lockup"><span>OYLUT</span><strong>Clipping</strong></div>
 </header>
-<main class="app-main drawer-page">
-    <section class="screen-heading">
+<main class="app-main drawer-page automation-main">
+    <section class="screen-heading automation-heading">
         <div>
-            <span class="screen-kicker">CLIPPING AUTOMÁTICO</span>
+            <span class="screen-kicker">AUTOMAÇÃO</span>
             <h1>Automação</h1>
             <p>Configure clippings automáticos para seus monitoramentos.</p>
         </div>
@@ -29,7 +28,7 @@
     <div class="empty-compact">Execute a migração da Sprint 9 no Supabase para ativar o clipping automático.</div>
     {% endif %}
 
-    <details class="app-card" open>
+    <details class="app-card automation-card" open>
         <summary><strong>Novo clipping automático</strong></summary>
         <form method="post" action="/agendamentos" class="stack-form schedule-form">
             <label>
