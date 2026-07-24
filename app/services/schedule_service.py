@@ -1,3 +1,4 @@
+import math
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
@@ -37,6 +38,7 @@ class ScheduleService:
             )
             if rows:
                 payload["next_run_at"] = self._next_run(rows[0]).isoformat()
+                payload["last_run_at"] = datetime.now(timezone.utc).isoformat()
         await self.database.request(
             "PATCH", "schedules", params={"id": f"eq.{schedule_id}"}, json=payload
         )
@@ -59,9 +61,16 @@ class ScheduleService:
         )
         executions = []
         for schedule in due:
+            previous_run = self._previous_run(schedule, now)
+            elapsed_hours = max(
+                1,
+                min(720, math.ceil((now - previous_run).total_seconds() / 3600)),
+            )
             try:
                 search, mentions, errors = await monitoring_search_service.execute(
-                    schedule["monitoring_id"], int(schedule["period_hours"])
+                    schedule["monitoring_id"],
+                    elapsed_hours,
+                    published_after=previous_run,
                 )
                 monitoring = await monitoring_search_service.get_monitoring(
                     schedule["monitoring_id"]
@@ -103,6 +112,7 @@ class ScheduleService:
                         "search_id": search["id"],
                         "clipping_id": clipping.get("id") if clipping else None,
                         "results": len(mentions),
+                        "searched_since": previous_run.isoformat(),
                         "errors": errors,
                     }
                 )
@@ -126,6 +136,15 @@ class ScheduleService:
                 )
         return executions
 
+    def _previous_run(self, schedule: dict, now: datetime) -> datetime:
+        raw = schedule.get("last_run_at") or schedule.get("created_at")
+        if raw:
+            parsed = datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+            if parsed.tzinfo is None:
+                parsed = parsed.replace(tzinfo=timezone.utc)
+            return min(parsed.astimezone(timezone.utc), now)
+        return now - timedelta(hours=24)
+
     def _next_run(self, data: dict, after: datetime | None = None) -> datetime:
         tz = ZoneInfo(data.get("timezone") or "America/Fortaleza")
         reference = (after or datetime.now(timezone.utc)).astimezone(tz)
@@ -136,11 +155,6 @@ class ScheduleService:
             candidate = candidate.replace(year=start.year, month=start.month, day=start.day)
         if candidate <= reference:
             candidate += timedelta(days=1)
-        if data.get("frequency") == "weekly":
-            weekday = int(data.get("weekday") or 0)
-            candidate += timedelta(days=(weekday - candidate.weekday()) % 7)
-            if candidate <= reference:
-                candidate += timedelta(days=7)
         return candidate.astimezone(timezone.utc)
 
 
