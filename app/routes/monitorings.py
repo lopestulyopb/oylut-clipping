@@ -87,3 +87,9 @@ async def change_monitoring_status(
 ) -> RedirectResponse:
     await monitoring_service.set_active(monitoring_id, is_active)
     return RedirectResponse(url=f"/clientes/{client_id}", status_code=303)
+
+
+@router.post("/{client_id}/monitoramentos/{monitoring_id}/excluir")
+async def delete_monitoring(client_id: str, monitoring_id: str) -> RedirectResponse:
+    await monitoring_service.delete(monitoring_id)
+    return RedirectResponse(url=f"/clientes/{client_id}", status_code=303)
