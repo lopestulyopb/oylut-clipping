@@ -16,6 +16,35 @@ BASE_DIR = Path(__file__).resolve().parents[1]
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
 
+async def _render_search_error(
+    request: Request,
+    message: str,
+    main_term: str,
+    variations: str,
+    period_hours: int,
+) -> HTMLResponse:
+    try:
+        clients = await client_service.list_clients()
+    except (httpx.HTTPError, RuntimeError):
+        clients = []
+
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        status_code=422,
+        context={
+            "app_name": "Oylut Clipping",
+            "clients": clients,
+            "error": message,
+            "form": {
+                "main_term": main_term,
+                "variations": variations,
+                "period_hours": period_hours,
+            },
+        },
+    )
+
+
 @router.post("/pesquisar", response_class=HTMLResponse)
 async def search(
     request: Request,
@@ -31,29 +60,24 @@ async def search(
             variations=variation_list,
             period_hours=period_hours,
         )
+        terms = prepare_terms(search_request.main_term, search_request.variations)
     except ValidationError:
-        try:
-            clients = await client_service.list_clients()
-        except (httpx.HTTPError, RuntimeError):
-            clients = []
-
-        return templates.TemplateResponse(
-            request=request,
-            name="index.html",
-            status_code=422,
-            context={
-                "app_name": "Oylut Clipping",
-                "clients": clients,
-                "error": "Preencha um termo com pelo menos dois caracteres.",
-                "form": {
-                    "main_term": main_term,
-                    "variations": variations,
-                    "period_hours": period_hours,
-                },
-            },
+        return await _render_search_error(
+            request,
+            "Preencha um termo com pelo menos dois caracteres e escolha um período válido.",
+            main_term,
+            variations,
+            period_hours,
+        )
+    except ValueError as exc:
+        return await _render_search_error(
+            request,
+            str(exc),
+            main_term,
+            variations,
+            period_hours,
         )
 
-    terms = prepare_terms(search_request.main_term, search_request.variations)
     mentions, errors = await search_mentions(terms, search_request.period_hours)
 
     return templates.TemplateResponse(
