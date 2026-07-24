@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{{ page_title }} | Oylut Clipping</title>
-    <link rel="stylesheet" href="/static/css/app.css?v=0.6.2">
-    <link rel="stylesheet" href="/static/css/compact.css?v=0.6.2">
-    <link rel="stylesheet" href="/static/css/drawer.css?v=0.6.2">
+    <link rel="stylesheet" href="/static/css/app.css?v=0.8.0">
+    <link rel="stylesheet" href="/static/css/compact.css?v=0.8.0">
+    <link rel="stylesheet" href="/static/css/drawer.css?v=0.8.0">
 </head>
 <body>
     {% include "_drawer.html" %}
@@ -27,6 +27,16 @@
                 </ol>
             {% endif %}
             {% if page_title == 'Minha Conta' %}
+                <div class="account-setting" style="display:flex;align-items:center;justify-content:space-between;gap:18px;margin:24px 0;padding:18px;border:1px solid #343b46;border-radius:16px">
+                    <div>
+                        <strong>Salvar pesquisas rápidas</strong>
+                        <p style="margin:6px 0 0;color:#a0a8b4">Quando ativado, as pesquisas feitas na página inicial aparecem no Histórico.</p>
+                    </div>
+                    <label aria-label="Salvar pesquisas rápidas">
+                        <input id="save-quick-searches" type="checkbox" style="width:24px;height:24px">
+                    </label>
+                </div>
+                <p id="setting-feedback" aria-live="polite" style="color:#a0a8b4"></p>
                 <dl class="account-summary">
                     <div><dt>Produto</dt><dd>Oylut Clipping</dd></div>
                     <div><dt>Versão</dt><dd>{{ version }}</dd></div>
@@ -34,5 +44,19 @@
             {% endif %}
         </section>
     </main>
+    {% if page_title == 'Minha Conta' %}
+    <script>
+        const preference = document.getElementById('save-quick-searches');
+        const feedback = document.getElementById('setting-feedback');
+        const key = 'oylutSaveQuickSearches';
+        preference.checked = localStorage.getItem(key) === 'true';
+        preference.addEventListener('change', () => {
+            localStorage.setItem(key, String(preference.checked));
+            feedback.textContent = preference.checked
+                ? 'Pesquisas rápidas serão salvas no Histórico.'
+                : 'Pesquisas rápidas não serão salvas.';
+        });
+    </script>
+    {% endif %}
 </body>
 </html>
