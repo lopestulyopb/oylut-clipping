@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados | {{ app_name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}">
+</head>
+<body>
+    <main class="page-shell">
+        <nav class="topbar">
+            <a class="back-link" href="/">← Nova pesquisa</a>
+            <span>{{ app_name }}</span>
+        </nav>
+
+        <header class="results-header">
+            <span class="eyebrow">Últimas {{ period_hours }} horas</span>
+            <h1>{{ total }} menções</h1>
+            <p>Termos pesquisados: {{ terms | join(', ') }}</p>
+        </header>
+
+        <div class="filter-row" aria-label="Filtros por tipo de mídia">
+            <button class="filter-chip active" type="button" data-filter="all">Todos</button>
+            <button class="filter-chip" type="button" data-filter="noticia">Notícias</button>
+            <button class="filter-chip" type="button" data-filter="youtube" disabled>YouTube</button>
+            <button class="filter-chip" type="button" data-filter="rede_social" disabled>Redes sociais</button>
+        </div>
+
+        {% for error in errors %}
+            <div class="alert alert-error">{{ error }}</div>
+        {% endfor %}
+
+        {% if mentions %}
+            <section class="results-list" aria-label="Menções encontradas">
+                {% for mention in mentions %}
+                    <article class="mention-card" data-media-type="{{ mention.media_type.value }}">
+                        <div class="mention-meta">
+                            <span class="media-badge">Notícia</span>
+                            <span>{{ mention.source }}</span>
+                        </div>
+                        <h2>{{ mention.title }}</h2>
+                        {% if mention.published_at %}
+                            <p class="published-at">Publicado em {{ mention.published_at.strftime('%d/%m/%Y às %H:%M') }}</p>
+                        {% endif %}
+                        {% if mention.excerpt %}
+                            <p class="excerpt">{{ mention.excerpt | striptags }}</p>
+                        {% endif %}
+                        <div class="mention-footer">
+                            <span>Termo pesquisado: <strong>{{ mention.searched_term }}</strong></span>
+                            <a href="{{ mention.url }}" target="_blank" rel="noopener noreferrer">Abrir conteúdo ↗</a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </section>
+        {% else %}
+            <section class="empty-state">
+                <h2>Nenhuma menção encontrada</h2>
+                <p>Tente incluir outras variações do termo ou aumentar o período da pesquisa.</p>
+                <a class="primary-link" href="/">Fazer nova pesquisa</a>
+            </section>
+        {% endif %}
+    </main>
+
+    <script>
+        const chips = document.querySelectorAll('.filter-chip:not(:disabled)');
+        const cards = document.querySelectorAll('.mention-card');
+
+        chips.forEach((chip) => {
+            chip.addEventListener('click', () => {
+                chips.forEach((item) => item.classList.remove('active'));
+                chip.classList.add('active');
+                const filter = chip.dataset.filter;
+
+                cards.forEach((card) => {
+                    card.hidden = filter !== 'all' && card.dataset.mediaType !== filter;
+                });
+            });
+        });
+    </script>
+</body>
+</html>
