@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Clientes | Oylut Clipping</title>
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+<main class="container">
+    <header class="page-header">
+        <div>
+            <p class="eyebrow">Oylut Clipping</p>
+            <h1>Clientes</h1>
+            <p>Cadastre as organizações que terão monitoramentos, pesquisas e clippings.</p>
+        </div>
+        <a href="/" class="button secondary">Voltar à busca</a>
+    </header>
+
+    {% if error %}
+        <div class="alert">{{ error }}</div>
+    {% endif %}
+
+    <section class="panel">
+        <h2>Novo cliente</h2>
+        <form method="post" action="/clientes" class="stack-form">
+            <label>
+                Nome
+                <input type="text" name="name" placeholder="Ex.: TCE-PB" required minlength="2">
+            </label>
+            <label>
+                URL da logo <span>(opcional)</span>
+                <input type="url" name="logo_url" placeholder="https://...">
+            </label>
+            <button type="submit" class="button">Cadastrar cliente</button>
+        </form>
+    </section>
+
+    <section class="panel">
+        <div class="section-heading">
+            <h2>Clientes cadastrados</h2>
+            <strong>{{ clients|length }}</strong>
+        </div>
+
+        {% if clients %}
+            <div class="client-list">
+                {% for client in clients %}
+                    <article class="client-card">
+                        <div>
+                            <h3>{{ client.name }}</h3>
+                            <p>{{ client.slug }}</p>
+                            <small>Criado em {{ client.created_at[:10] }}</small>
+                        </div>
+                        <form method="post" action="/clientes/{{ client.id }}/status">
+                            <input type="hidden" name="is_active" value="{{ 'false' if client.is_active else 'true' }}">
+                            <button class="button secondary" type="submit">
+                                {{ 'Desativar' if client.is_active else 'Ativar' }}
+                            </button>
+                        </form>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty-state">Nenhum cliente cadastrado ainda.</p>
+        {% endif %}
+    </section>
+</main>
+</body>
+</html>
