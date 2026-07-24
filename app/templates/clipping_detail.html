@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>{{ clipping.title }} | Oylut Clipping</title><link rel="stylesheet" href="/static/css/app.css?v=0.9.0"><link rel="stylesheet" href="/static/css/management.css?v=0.9.0"><link rel="stylesheet" href="/static/css/drawer.css?v=0.9.0"><link rel="stylesheet" href="/static/css/clippings.css?v=0.9.0"></head>
+<body class="app-body">
+{% include "_drawer.html" %}
+<header class="app-header"><a href="/clippings" class="icon-button" aria-label="Voltar">←</a><div class="brand-lockup"><span>OYLUT</span><strong>Clipping</strong></div></header>
+<main class="app-main drawer-page">
+<section class="screen-heading clipping-detail-heading"><div><span class="screen-kicker">CLIPPING</span><h1>{{ clipping.title }}</h1><p>{{ clipping.client_name or 'Sem cliente' }}{% if clipping.monitoring_name %} · {{ clipping.monitoring_name }}{% endif %}</p></div><span class="count-pill">{{ items|length }}</span></section>
+<div class="clipping-detail-actions"><a class="primary-button" href="/clippings/{{ clipping.id }}/pdf">Baixar PDF</a><form method="post" action="/clippings/{{ clipping.id }}/excluir" onsubmit="return confirm('Excluir este clipping?')"><button class="text-button danger-button" type="submit">Excluir clipping</button></form></div>
+<section class="review-list">{% for item in items %}<article class="clipping-item"><span class="media-badge">{{ loop.index }}</span><div><h2>{{ item.title }}</h2><p>{{ item.source }}{% if item.matched_term %} · {{ item.matched_term }}{% endif %}</p>{% if item.excerpt %}<p>{{ item.excerpt }}</p>{% endif %}<a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">Abrir publicação ↗</a></div></article>{% endfor %}</section>
+</main></body></html>
