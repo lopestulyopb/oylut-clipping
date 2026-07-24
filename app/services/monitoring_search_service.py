@@ -53,7 +53,12 @@ class MonitoringSearchService:
     async def delete_term(self, term_id: str) -> None:
         await self.database.request("DELETE", "terms", params={"id": f"eq.{term_id}"})
 
-    async def execute(self, monitoring_id: str, period_hours: int) -> tuple[dict, list, list[str]]:
+    async def execute(
+        self,
+        monitoring_id: str,
+        period_hours: int,
+        published_after: datetime | None = None,
+    ) -> tuple[dict, list, list[str]]:
         terms = await self.list_terms(monitoring_id)
         active_terms = [term["text"] for term in terms if term.get("is_active")]
         if not active_terms:
@@ -69,6 +74,14 @@ class MonitoringSearchService:
         search = rows[0]
         try:
             mentions, errors = await search_mentions(active_terms, period_hours)
+            if published_after:
+                cutoff = published_after.astimezone(timezone.utc)
+                mentions = [
+                    mention for mention in mentions
+                    if mention.published_at is None
+                    or mention.published_at.astimezone(timezone.utc) > cutoff
+                ]
+
             if mentions:
                 payload = [{
                     "search_id": search["id"],
