@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Histórico | Oylut Clipping</title>
+    <link rel="stylesheet" href="/static/css/app.css">
+    <link rel="stylesheet" href="/static/css/management.css">
+</head>
+<body class="app-body">
+<header class="app-header">
+    <a href="/" class="icon-button" aria-label="Voltar">←</a>
+    <div class="brand-lockup"><span>OYLUT</span><strong>Clipping</strong></div>
+</header>
+<main class="app-main">
+    <section class="screen-heading">
+        <div><span class="screen-kicker">PESQUISAS</span><h1>Histórico</h1></div>
+        <span class="count-pill">{{ searches|length }}</span>
+    </section>
+    {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+    {% if searches %}
+    <div class="client-list">
+        {% for search in searches %}
+        <a class="history-row" href="/historico/{{ search.id }}">
+            <span class="history-main">
+                <strong>{{ search.monitorings.name if search.monitorings else 'Monitoramento removido' }}</strong>
+                <small>{{ search.monitorings.clients.name if search.monitorings and search.monitorings.clients else 'Cliente não identificado' }}</small>
+            </span>
+            <span class="history-meta">
+                <strong>{{ search.result_count }} resultados</strong>
+                <small>{{ search.started_at[:16]|replace('T', ' · ') }}</small>
+            </span>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}<div class="empty-compact">Nenhuma pesquisa realizada.</div>{% endif %}
+</main>
+</body>
+</html>
