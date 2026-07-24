@@ -4,22 +4,27 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Revisar clipping | Oylut Clipping</title>
-    <link rel="stylesheet" href="/static/css/app.css?v=0.9.1">
-    <link rel="stylesheet" href="/static/css/management.css?v=0.9.1">
-    <link rel="stylesheet" href="/static/css/drawer.css?v=0.9.1">
-    <link rel="stylesheet" href="/static/css/clippings.css?v=0.9.1">
+    <link rel="stylesheet" href="/static/css/app.css?v=0.9.2">
+    <link rel="stylesheet" href="/static/css/management.css?v=0.9.2">
+    <link rel="stylesheet" href="/static/css/drawer.css?v=0.9.2">
+    <link rel="stylesheet" href="/static/css/clippings.css?v=0.9.2">
 </head>
 <body class="app-body">
 {% include "_drawer.html" %}
 <header class="app-header"><a href="javascript:history.back()" class="icon-button" aria-label="Voltar">←</a><div class="brand-lockup"><span>OYLUT</span><strong>Clipping</strong></div></header>
 <main class="app-main drawer-page clipping-review-page">
     <section class="screen-heading review-heading"><div><span class="screen-kicker">REVISÃO</span><h1>Criar clipping</h1><p>Revise o título e as publicações antes de salvar.</p></div><span class="count-pill" id="review-count">0</span></section>
-    {% if error %}<div class="alert alert-error friendly-error">{{ error }}</div>{% endif %}
     <form id="clipping-form" method="post" action="/clippings" class="stack-form review-form">
         <section class="app-card title-card">
             <label for="clipping-title">Título do clipping</label>
             <input id="clipping-title" name="title" type="text" required minlength="2" placeholder="Ex.: Clipping institucional — 24/07/2026">
             <small>Este título identifica o clipping no histórico e aparece no PDF.</small>
+            {% if form_message %}<p class="form-message">{{ form_message }}</p>{% endif %}
+            {% if setup_pending %}<p class="setup-note">O salvamento ficará disponível após a configuração do arquivo de clippings.</p>{% endif %}
+            <div class="title-card-action-row">
+                <span><strong id="save-count">0</strong> publicações</span>
+                <button id="save-clipping" class="primary-button" type="submit" {% if setup_pending %}disabled{% endif %}>Salvar clipping</button>
+            </div>
             <input id="items-json" name="items_json" type="hidden">
             <input id="monitoring-id" name="monitoring_id" type="hidden">
             <input id="search-id" name="search_id" type="hidden">
@@ -31,10 +36,6 @@
             <div id="review-list" class="review-list"></div>
             <div id="review-empty" class="empty-compact" hidden>Nenhuma publicação selecionada.</div>
         </section>
-        <div class="review-save-bar">
-            <span><strong id="save-count">0</strong> publicações</span>
-            <button id="save-clipping" class="primary-button" type="submit" disabled>Salvar clipping</button>
-        </div>
     </form>
 </main>
 <script>
@@ -48,6 +49,7 @@
     const saveCount = document.getElementById('save-count');
     const input = document.getElementById('items-json');
     const save = document.getElementById('save-clipping');
+    const storagePending = {{ 'true' if setup_pending else 'false' }};
     const title = document.getElementById('clipping-title');
     let metadata = {};
     try { metadata = JSON.parse(sessionStorage.getItem('oylutSelectedClippingMeta') || '{}'); } catch (error) { metadata = {}; }
@@ -74,7 +76,7 @@
         saveCount.textContent = items.length;
         input.value = JSON.stringify(items);
         empty.hidden = items.length !== 0;
-        save.disabled = items.length === 0;
+        save.disabled = storagePending || items.length === 0;
         sessionStorage.setItem(storageKey, JSON.stringify(items));
     }
     document.getElementById('remove-all').addEventListener('click', () => { if (confirm('Remover todas as publicações selecionadas?')) { items.splice(0); render(); } });
