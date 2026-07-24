@@ -45,5 +45,8 @@ class MonitoringService:
         )
         return rows[0]
 
+    async def delete(self, monitoring_id: str) -> None:
+        await self.database.request("DELETE", "monitorings", params={"id": f"eq.{monitoring_id}"})
+
 
 monitoring_service = MonitoringService()
