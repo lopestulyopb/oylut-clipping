@@ -38,5 +38,14 @@ class HistoryService:
             },
         )
 
+    async def delete_search(self, search_id: str) -> None:
+        await self.database.request("DELETE", "results", params={"search_id": f"eq.{search_id}"})
+        await self.database.request("DELETE", "searches", params={"id": f"eq.{search_id}"})
+
+    async def clear_history(self) -> None:
+        searches = await self.database.request("GET", "searches", params={"select": "id"})
+        for search in searches:
+            await self.delete_search(search["id"])
+
 
 history_service = HistoryService()
