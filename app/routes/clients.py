@@ -37,6 +37,16 @@ async def create_client(
     return RedirectResponse(url="/clientes", status_code=303)
 
 
+@router.post("/{client_id}/editar")
+async def edit_client(
+    client_id: str,
+    name: str = Form(...),
+    logo_url: str = Form(""),
+) -> RedirectResponse:
+    await client_service.update_client(client_id, name, logo_url)
+    return RedirectResponse(url="/clientes", status_code=303)
+
+
 @router.post("/{client_id}/status")
 async def change_client_status(
     client_id: str,
