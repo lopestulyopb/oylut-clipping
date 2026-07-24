@@ -4,46 +4,53 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Revisar clipping | Oylut Clipping</title>
-    <link rel="stylesheet" href="/static/css/app.css?v=0.9.0">
-    <link rel="stylesheet" href="/static/css/management.css?v=0.9.0">
-    <link rel="stylesheet" href="/static/css/drawer.css?v=0.9.0">
-    <link rel="stylesheet" href="/static/css/clippings.css?v=0.9.0">
+    <link rel="stylesheet" href="/static/css/app.css?v=0.9.1">
+    <link rel="stylesheet" href="/static/css/management.css?v=0.9.1">
+    <link rel="stylesheet" href="/static/css/drawer.css?v=0.9.1">
+    <link rel="stylesheet" href="/static/css/clippings.css?v=0.9.1">
 </head>
 <body class="app-body">
 {% include "_drawer.html" %}
 <header class="app-header"><a href="javascript:history.back()" class="icon-button" aria-label="Voltar">←</a><div class="brand-lockup"><span>OYLUT</span><strong>Clipping</strong></div></header>
-<main class="app-main drawer-page">
-    <section class="screen-heading"><div><span class="screen-kicker">REVISÃO</span><h1>Criar clipping</h1></div><span class="count-pill" id="review-count">0</span></section>
-    {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
-    <form id="clipping-form" method="post" action="/clippings" class="stack-form">
-        <section class="app-card">
+<main class="app-main drawer-page clipping-review-page">
+    <section class="screen-heading review-heading"><div><span class="screen-kicker">REVISÃO</span><h1>Criar clipping</h1><p>Revise o título e as publicações antes de salvar.</p></div><span class="count-pill" id="review-count">0</span></section>
+    {% if error %}<div class="alert alert-error friendly-error">{{ error }}</div>{% endif %}
+    <form id="clipping-form" method="post" action="/clippings" class="stack-form review-form">
+        <section class="app-card title-card">
             <label for="clipping-title">Título do clipping</label>
             <input id="clipping-title" name="title" type="text" required minlength="2" placeholder="Ex.: Clipping institucional — 24/07/2026">
+            <small>Este título identifica o clipping no histórico e aparece no PDF.</small>
             <input id="items-json" name="items_json" type="hidden">
             <input id="monitoring-id" name="monitoring_id" type="hidden">
             <input id="search-id" name="search_id" type="hidden">
             <input id="client-name" name="client_name" type="hidden">
             <input id="monitoring-name" name="monitoring_name" type="hidden">
         </section>
-        <section class="list-section">
-            <div class="section-title-row"><h2>Publicações selecionadas</h2><button id="remove-all" class="text-button" type="button">Remover todas</button></div>
+        <section class="list-section review-section">
+            <div class="section-title-row review-section-title"><div><span class="screen-kicker">CONTEÚDO</span><h2>Publicações selecionadas</h2></div><button id="remove-all" class="text-button compact-text-button" type="button">Remover todas</button></div>
             <div id="review-list" class="review-list"></div>
             <div id="review-empty" class="empty-compact" hidden>Nenhuma publicação selecionada.</div>
         </section>
-        <button id="save-clipping" class="primary-button" type="submit" disabled>Salvar clipping</button>
+        <div class="review-save-bar">
+            <span><strong id="save-count">0</strong> publicações</span>
+            <button id="save-clipping" class="primary-button" type="submit" disabled>Salvar clipping</button>
+        </div>
     </form>
 </main>
 <script>
 (() => {
     const storageKey = 'oylutSelectedClippingItems';
-    const items = JSON.parse(sessionStorage.getItem(storageKey) || '[]');
+    let items = [];
+    try { items = JSON.parse(sessionStorage.getItem(storageKey) || '[]'); } catch (error) { items = []; }
     const list = document.getElementById('review-list');
     const empty = document.getElementById('review-empty');
     const count = document.getElementById('review-count');
+    const saveCount = document.getElementById('save-count');
     const input = document.getElementById('items-json');
     const save = document.getElementById('save-clipping');
     const title = document.getElementById('clipping-title');
-    const metadata = JSON.parse(sessionStorage.getItem('oylutSelectedClippingMeta') || '{}');
+    let metadata = {};
+    try { metadata = JSON.parse(sessionStorage.getItem('oylutSelectedClippingMeta') || '{}'); } catch (error) { metadata = {}; }
     document.getElementById('monitoring-id').value = metadata.monitoringId || '';
     document.getElementById('search-id').value = metadata.searchId || '';
     document.getElementById('client-name').value = metadata.clientName || '';
@@ -57,13 +64,14 @@
         items.forEach((item, index) => {
             const article = document.createElement('article');
             article.className = 'review-item';
-            article.innerHTML = `<div><span class="media-badge">${index + 1}</span><strong></strong><small></small></div><button class="icon-action danger-action" type="button" aria-label="Remover publicação">×</button>`;
+            article.innerHTML = `<span class="review-index">${index + 1}</span><div class="review-copy"><strong></strong><small></small></div><button class="icon-action neutral-delete-action review-remove" type="button" aria-label="Remover publicação"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>`;
             article.querySelector('strong').textContent = item.title;
             article.querySelector('small').textContent = `${item.source} · ${item.term || 'Termo não informado'}`;
             article.querySelector('button').addEventListener('click', () => { items.splice(index, 1); render(); });
             list.appendChild(article);
         });
         count.textContent = items.length;
+        saveCount.textContent = items.length;
         input.value = JSON.stringify(items);
         empty.hidden = items.length !== 0;
         save.disabled = items.length === 0;
