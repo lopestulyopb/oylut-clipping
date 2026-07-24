@@ -21,6 +21,14 @@ class ClientService:
             params={"select": "*", "order": "created_at.desc"},
         )
 
+    async def get_client(self, client_id: str) -> dict | None:
+        rows = await self.database.request(
+            "GET",
+            "clients",
+            params={"select": "*", "id": f"eq.{client_id}", "limit": "1"},
+        )
+        return rows[0] if rows else None
+
     async def create_client(self, name: str, logo_url: str | None = None) -> dict:
         clean_name = name.strip()
         payload = {
@@ -32,6 +40,21 @@ class ClientService:
             "POST",
             "clients",
             json=payload,
+            prefer="return=representation",
+        )
+        return rows[0]
+
+    async def update_client(self, client_id: str, name: str, logo_url: str | None = None) -> dict:
+        clean_name = name.strip()
+        rows = await self.database.request(
+            "PATCH",
+            "clients",
+            params={"id": f"eq.{client_id}"},
+            json={
+                "name": clean_name,
+                "slug": create_slug(clean_name),
+                "logo_url": logo_url.strip() if logo_url and logo_url.strip() else None,
+            },
             prefer="return=representation",
         )
         return rows[0]
