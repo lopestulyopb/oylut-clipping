@@ -34,7 +34,7 @@ def _split_title(raw_title: str) -> tuple[str, str]:
 
 
 async def search_google_news(term: str, period_hours: int = 24) -> list[Mention]:
-    """Collect every Google News RSS entry that falls inside the requested period."""
+    """Collect Google News publications from the requested period."""
     query = quote_plus(f'"{term}" when:{period_hours}h')
     url = GOOGLE_NEWS_RSS.format(query=query)
 
@@ -67,7 +67,7 @@ async def search_google_news(term: str, period_hours: int = 24) -> list[Mention]
                 media_type=MediaType.NEWS,
                 url=link,
                 published_at=published_at,
-                excerpt=entry.get("summary"),
+                excerpt=None,
                 searched_term=term,
                 matched_term=term,
             )
