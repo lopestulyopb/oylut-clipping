@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Clientes | Oylut Clipping</title>
-    <link rel="stylesheet" href="/static/css/app.css?v=0.7.2">
-    <link rel="stylesheet" href="/static/css/management.css?v=0.7.2">
-    <link rel="stylesheet" href="/static/css/drawer.css?v=0.7.2">
+    <link rel="stylesheet" href="/static/css/app.css?v=0.8.0">
+    <link rel="stylesheet" href="/static/css/management.css?v=0.8.0">
+    <link rel="stylesheet" href="/static/css/drawer.css?v=0.8.0">
 </head>
 <body class="app-body">
     {% include "_drawer.html" %}
@@ -19,6 +19,7 @@
             <div><span class="screen-kicker">GESTÃO</span><h1>Clientes</h1></div>
             <span class="count-pill">{{ clients|length }}</span>
         </section>
+        <p style="color:#8e96a3;margin-top:-18px">Cliente → monitoramentos → termos</p>
         {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
 
         <section class="list-section">
@@ -33,7 +34,7 @@
                         <span class="row-arrow">›</span>
                     </summary>
                     <div class="row-actions client-actions">
-                        <a class="primary-action" href="/clientes/{{ client.id }}">Monitoramentos</a>
+                        <a class="primary-action" href="/clientes/{{ client.id }}">Abrir monitoramentos</a>
                         <form method="post" action="/clientes/{{ client.id }}/editar" class="client-inline-edit">
                             <label class="sr-only" for="client-name-{{ client.id }}">Nome do cliente</label>
                             <input id="client-name-{{ client.id }}" type="text" name="name" value="{{ client.name }}" required minlength="2">
@@ -41,11 +42,19 @@
                                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 9.2 17 19 7"/></svg>
                             </button>
                         </form>
-                        <form method="post" action="/clientes/{{ client.id }}/excluir" class="delete-client-form" onsubmit="return confirm('Excluir este cliente e todos os monitoramentos, termos e resultados?')">
-                            <button class="icon-action danger-action" type="submit" aria-label="Excluir cliente" title="Excluir cliente">
-                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v5m4-5v5"/></svg>
-                            </button>
-                        </form>
+                        <div style="display:flex;gap:10px;justify-content:flex-end">
+                            <form method="post" action="/clientes/{{ client.id }}/status">
+                                <input type="hidden" name="is_active" value="{{ 'false' if client.is_active else 'true' }}">
+                                <button class="icon-action" type="submit" aria-label="{{ 'Desativar' if client.is_active else 'Ativar' }} cliente" title="{{ 'Desativar' if client.is_active else 'Ativar' }} cliente">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v9M6.3 6.3a8 8 0 1 0 11.4 0"/></svg>
+                                </button>
+                            </form>
+                            <form method="post" action="/clientes/{{ client.id }}/excluir" class="delete-client-form" onsubmit="return confirm('Excluir este cliente e todos os monitoramentos, termos e resultados?')">
+                                <button class="icon-action danger-action" type="submit" aria-label="Excluir cliente" title="Excluir cliente">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v5m4-5v5"/></svg>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </details>
                 {% endfor %}
@@ -58,7 +67,7 @@
             <form method="post" action="/clientes" class="stack-form" style="margin-top:20px">
                 <label for="name">Nome</label>
                 <input id="name" type="text" name="name" placeholder="Ex.: Cliente principal" required minlength="2">
-                <button type="submit" class="primary-button">Cadastrar</button>
+                <button type="submit" class="primary-button">Cadastrar cliente</button>
             </form>
         </details>
     </main>
