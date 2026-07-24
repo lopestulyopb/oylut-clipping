@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Resultados | {{ app_name }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}?v=0.7.5">
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/compact.css') }}?v=0.7.5">
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/sprint3.css') }}?v=0.7.5">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}?v=0.7.6">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/compact.css') }}?v=0.7.6">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/sprint3.css') }}?v=0.7.6">
 </head>
 <body>
     <main class="page-shell compact-shell">
@@ -30,42 +30,51 @@
         {% for error in errors %}<div class="alert alert-error">{{ error }}</div>{% endfor %}
 
         {% if mentions %}
-        <section class="results-toolbar" aria-label="Ferramentas dos resultados">
+        <section class="results-controls" aria-label="Ferramentas dos resultados">
             <div class="results-summary" aria-live="polite">
                 <strong><span id="visible-count">{{ total }}</span> resultados</strong>
                 <span><span id="selected-count">0</span> selecionadas</span>
             </div>
 
-            <div class="results-filters">
-                <label>
-                    <span>Veículo</span>
-                    <select id="source-filter">
-                        <option value="all">Todos os veículos</option>
-                    </select>
-                </label>
-                <label>
-                    <span>Termo encontrado</span>
-                    <select id="term-filter">
-                        <option value="all">Todos os termos</option>
-                    </select>
-                </label>
-                <label>
-                    <span>Ordenação</span>
-                    <select id="sort-filter">
-                        <option value="newest">Mais recentes</option>
-                        <option value="oldest">Mais antigos</option>
-                    </select>
-                </label>
-                <label class="selected-only-control">
-                    <input id="selected-only" type="checkbox">
-                    <span>Somente selecionadas</span>
-                </label>
+            <div class="compact-action-row">
+                <button id="filters-toggle" class="compact-action-button" type="button" aria-expanded="false" aria-controls="filters-panel">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M7 12h10M10 19h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    <span>Filtros</span>
+                </button>
+                <button id="select-visible" class="compact-action-button" type="button">Selecionar</button>
+                <button id="create-clipping" class="compact-action-button compact-action-primary" type="button" disabled>Criar clipping (0)</button>
             </div>
 
-            <div class="selection-actions">
-                <button id="select-visible" class="secondary-button" type="button">Selecionar todas</button>
-                <button id="clear-selection" class="text-button" type="button" disabled>Limpar seleção</button>
-                <button id="create-clipping" class="primary-button" type="button" disabled>Criar clipping (0)</button>
+            <div id="filters-panel" class="filters-panel" hidden>
+                <div class="results-filters">
+                    <label>
+                        <span>Veículo</span>
+                        <select id="source-filter">
+                            <option value="all">Todos os veículos</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>Termo encontrado</span>
+                        <select id="term-filter">
+                            <option value="all">Todos os termos</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>Ordenação</span>
+                        <select id="sort-filter">
+                            <option value="newest">Mais recentes</option>
+                            <option value="oldest">Mais antigos</option>
+                        </select>
+                    </label>
+                    <label class="selected-only-control">
+                        <input id="selected-only" type="checkbox">
+                        <span>Somente selecionadas</span>
+                    </label>
+                </div>
+                <div class="filter-panel-actions">
+                    <button id="reset-filters" class="text-button" type="button">Limpar filtros</button>
+                    <button id="clear-selection" class="text-button" type="button" disabled>Limpar seleção</button>
+                </div>
             </div>
         </section>
 
@@ -93,13 +102,9 @@
 
                 {% if mention.published_at %}
                     {% if mention.published_at.strftime is defined %}
-                    <p class="published-at">
-                        <time datetime="{{ mention.published_at.isoformat() }}">{{ mention.published_at.strftime('%d/%m/%Y · %H:%M') }}</time>
-                    </p>
+                    <p class="published-at"><time datetime="{{ mention.published_at.isoformat() }}">{{ mention.published_at.strftime('%d/%m/%Y · %H:%M') }}</time></p>
                     {% else %}
-                    <p class="published-at">
-                        <time datetime="{{ mention.published_at }}">{{ mention.published_at[:10].split('-')|reverse|join('/') }} · {{ mention.published_at[11:16] }}</time>
-                    </p>
+                    <p class="published-at"><time datetime="{{ mention.published_at }}">{{ mention.published_at[:10].split('-')|reverse|join('/') }} · {{ mention.published_at[11:16] }}</time></p>
                     {% endif %}
                 {% endif %}
 
@@ -117,7 +122,7 @@
 
         <section id="filtered-empty" class="empty-state" hidden>
             <h2>Nenhum resultado corresponde aos filtros</h2>
-            <button id="reset-filters" class="secondary-button" type="button">Limpar filtros</button>
+            <button id="empty-reset-filters" class="secondary-button" type="button">Limpar filtros</button>
         </section>
         {% else %}
         <section class="empty-state">
@@ -140,8 +145,11 @@
         const selectVisibleButton = document.getElementById('select-visible');
         const clearSelectionButton = document.getElementById('clear-selection');
         const createClippingButton = document.getElementById('create-clipping');
+        const filtersToggle = document.getElementById('filters-toggle');
+        const filtersPanel = document.getElementById('filters-panel');
         const filteredEmpty = document.getElementById('filtered-empty');
         const resetFiltersButton = document.getElementById('reset-filters');
+        const emptyResetFiltersButton = document.getElementById('empty-reset-filters');
         const selectedIds = new Set();
 
         const normalize = (value) => value.trim().toLocaleLowerCase('pt-BR');
@@ -193,10 +201,7 @@
             });
 
             const direction = sortFilter.value === 'oldest' ? 1 : -1;
-            cards
-                .slice()
-                .sort((a, b) => direction * (Number(a.dataset.timestamp) - Number(b.dataset.timestamp)))
-                .forEach((card) => list.appendChild(card));
+            cards.slice().sort((a, b) => direction * (Number(a.dataset.timestamp) - Number(b.dataset.timestamp))).forEach((card) => list.appendChild(card));
 
             const visible = visibleCards();
             visibleCount.textContent = visible.length;
@@ -204,9 +209,24 @@
             list.hidden = visible.length === 0;
             selectVisibleButton.disabled = visible.length === 0;
             selectVisibleButton.textContent = visible.length > 0 && visible.every((card) => selectedIds.has(card.dataset.selectionId))
-                ? 'Desmarcar visíveis'
-                : 'Selecionar todas';
+                ? 'Desmarcar'
+                : 'Selecionar';
         }
+
+        function resetFilters() {
+            sourceFilter.value = 'all';
+            termFilter.value = 'all';
+            sortFilter.value = 'newest';
+            selectedOnly.checked = false;
+            applyFilters();
+        }
+
+        filtersToggle.addEventListener('click', () => {
+            const willOpen = filtersPanel.hidden;
+            filtersPanel.hidden = !willOpen;
+            filtersToggle.setAttribute('aria-expanded', String(willOpen));
+            filtersToggle.classList.toggle('is-active', willOpen);
+        });
 
         cards.forEach((card) => {
             const checkbox = card.querySelector('.mention-checkbox');
@@ -218,9 +238,7 @@
             });
         });
 
-        [sourceFilter, termFilter, sortFilter, selectedOnly].forEach((control) => {
-            control.addEventListener('change', applyFilters);
-        });
+        [sourceFilter, termFilter, sortFilter, selectedOnly].forEach((control) => control.addEventListener('change', applyFilters));
 
         selectVisibleButton.addEventListener('click', () => {
             const visible = visibleCards();
@@ -239,13 +257,8 @@
             applyFilters();
         });
 
-        resetFiltersButton.addEventListener('click', () => {
-            sourceFilter.value = 'all';
-            termFilter.value = 'all';
-            sortFilter.value = 'newest';
-            selectedOnly.checked = false;
-            applyFilters();
-        });
+        resetFiltersButton.addEventListener('click', resetFilters);
+        emptyResetFiltersButton.addEventListener('click', resetFilters);
 
         createClippingButton.addEventListener('click', () => {
             if (!selectedIds.size) return;
