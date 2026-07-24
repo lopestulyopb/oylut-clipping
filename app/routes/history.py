@@ -2,7 +2,7 @@ from pathlib import Path
 
 import httpx
 from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from app.services.history_service import history_service
@@ -26,6 +26,18 @@ async def history_page(request: Request) -> HTMLResponse:
         name="history.html",
         context={"searches": searches, "error": error},
     )
+
+
+@router.post("/limpar")
+async def clear_history() -> RedirectResponse:
+    await history_service.clear_history()
+    return RedirectResponse(url="/historico", status_code=303)
+
+
+@router.post("/{search_id}/excluir")
+async def delete_history_search(search_id: str) -> RedirectResponse:
+    await history_service.delete_search(search_id)
+    return RedirectResponse(url="/historico", status_code=303)
 
 
 @router.get("/{search_id}", response_class=HTMLResponse)
