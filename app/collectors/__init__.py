@@ -1,0 +1,1 @@
+"""Coletores do Oylut Clipping."""
