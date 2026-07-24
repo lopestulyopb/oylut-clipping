@@ -3,15 +3,62 @@
 <head>
     <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Histórico | Oylut Clipping</title>
-    <link rel="stylesheet" href="/static/css/app.css?v=0.7.0"><link rel="stylesheet" href="/static/css/management.css?v=0.7.0"><link rel="stylesheet" href="/static/css/drawer.css?v=0.7.0">
+    <link rel="stylesheet" href="/static/css/app.css?v=0.8.0"><link rel="stylesheet" href="/static/css/management.css?v=0.8.0"><link rel="stylesheet" href="/static/css/drawer.css?v=0.8.0">
 </head>
 <body class="app-body">
 {% include "_drawer.html" %}
 <header class="app-header"><a href="/" class="icon-button" aria-label="Voltar">←</a><div class="brand-lockup"><span>OYLUT</span><strong>Clipping</strong></div></header>
 <main class="app-main drawer-page">
-    <section class="screen-heading"><div><span class="screen-kicker">PESQUISAS</span><h1>Histórico</h1></div><span class="count-pill">{{ searches|length }}</span></section>
+    <section class="screen-heading"><div><span class="screen-kicker">PESQUISAS</span><h1>Histórico</h1></div><span class="count-pill" id="history-count">{{ searches|length }}</span></section>
     {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
-    {% if searches %}<div class="client-list">{% for search in searches %}<a class="history-row" href="/historico/{{ search.id }}"><span class="history-main"><strong>{{ search.monitorings.name if search.monitorings else 'Monitoramento removido' }}</strong><small>{{ search.monitorings.clients.name if search.monitorings and search.monitorings.clients else 'Cliente não identificado' }}</small></span><span class="history-meta"><strong>{{ search.result_count }} resultados</strong><small>{{ search.started_at[:16]|replace('T', ' · ') }}</small></span></a>{% endfor %}</div>{% else %}<div class="empty-compact">Nenhuma pesquisa realizada.</div>{% endif %}
+
+    <section id="quick-history-section" class="list-section" hidden>
+        <h2>Pesquisas rápidas</h2>
+        <div id="quick-history-list" class="client-list"></div>
+    </section>
+
+    <section class="list-section">
+        <h2>Monitoramentos</h2>
+        {% if searches %}<div class="client-list">{% for search in searches %}<a class="history-row" href="/historico/{{ search.id }}"><span class="history-main"><strong>{{ search.monitorings.name if search.monitorings else 'Monitoramento removido' }}</strong><small>{{ search.monitorings.clients.name if search.monitorings and search.monitorings.clients else 'Cliente não identificado' }} · {{ search.period_hours }}h</small></span><span class="history-meta"><strong>{{ search.result_count }} resultados</strong><small>{{ search.started_at[:16]|replace('T', ' · ') }}</small></span></a>{% endfor %}</div>{% else %}<div class="empty-compact">Nenhuma pesquisa de monitoramento realizada.</div>{% endif %}
+    </section>
 </main>
+<script>
+(() => {
+    const history = JSON.parse(localStorage.getItem('oylutQuickSearchHistory') || '[]');
+    if (!history.length) return;
+    const section = document.getElementById('quick-history-section');
+    const list = document.getElementById('quick-history-list');
+    const count = document.getElementById('history-count');
+    section.hidden = false;
+    count.textContent = Number(count.textContent || 0) + history.length;
+
+    history.forEach((item) => {
+        const row = document.createElement('div');
+        row.className = 'history-row';
+        const date = new Date(item.timestamp).toLocaleString('pt-BR', {dateStyle: 'short', timeStyle: 'short'});
+        row.innerHTML = `<span class="history-main"><strong></strong><small></small></span><span class="history-meta"><strong>${item.resultCount} resultados</strong><small>${date}</small></span>`;
+        row.querySelector('.history-main strong').textContent = item.mainTerm;
+        row.querySelector('.history-main small').textContent = item.periodLabel;
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'text-button';
+        button.textContent = 'Reabrir';
+        button.addEventListener('click', () => {
+            const form = document.createElement('form');
+            form.method = 'post';
+            form.action = '/pesquisar';
+            const fields = {main_term: item.mainTerm, variations: (item.variations || []).join('\n'), period_hours: item.periodHours};
+            Object.entries(fields).forEach(([name, value]) => {
+                const input = document.createElement('input');
+                input.type = 'hidden'; input.name = name; input.value = value; form.appendChild(input);
+            });
+            document.body.appendChild(form);
+            form.submit();
+        });
+        row.appendChild(button);
+        list.appendChild(row);
+    });
+})();
+</script>
 </body>
 </html>
