@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{{ app_name }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}?v=0.7.0">
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/compact.css') }}?v=0.7.0">
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/management.css') }}?v=0.7.0">
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/drawer.css') }}?v=0.7.0">
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/sprint5.css') }}?v=0.7.0">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}?v=0.7.1">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/compact.css') }}?v=0.7.1">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/management.css') }}?v=0.7.1">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/drawer.css') }}?v=0.7.1">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/sprint5.css') }}?v=0.7.1">
 </head>
 <body class="app-body">
     {% include "_drawer.html" %}
@@ -16,34 +16,29 @@
         <header class="simple-brand workspace-header">
             <span class="screen-kicker">INÍCIO</span>
             <h1>Novo monitoramento</h1>
-            <p>Cadastre o cliente, o monitoramento e os termos em uma única etapa.</p>
+            <p>Pesquise um tema sem precisar vincular a um cliente.</p>
         </header>
 
         {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
 
         <section class="app-card workspace-form-card">
-            {% if clients %}
-            <form method="post" action="/novo-monitoramento" class="stack-form submit-lock-form">
-                <label for="client_id">Cliente</label>
-                <select id="client_id" name="client_id" required>
-                    <option value="">Selecione</option>
-                    {% for client in clients if client.is_active %}<option value="{{ client.id }}">{{ client.name }}</option>{% endfor %}
-                </select>
-                <label for="name">Nome do monitoramento</label>
-                <input id="name" name="name" type="text" required minlength="2" placeholder="Ex.: Institucional">
+            <form method="post" action="/pesquisar" class="stack-form submit-lock-form">
                 <label for="main_term">Termo principal</label>
-                <input id="main_term" name="main_term" type="text" required minlength="2" placeholder="Ex.: TCE-PB">
-                <label for="secondary_terms">Termos secundários <span class="optional">um por linha</span></label>
-                <textarea id="secondary_terms" name="secondary_terms" rows="5" placeholder="Tribunal de Contas da Paraíba&#10;Tribunal de Contas do Estado"></textarea>
-                <button type="submit" class="primary-button" data-loading-text="Criando monitoramento...">Criar monitoramento</button>
+                <input id="main_term" name="main_term" type="text" required minlength="2" value="{{ form.main_term if form else '' }}" placeholder="Ex.: TCE-PB">
+
+                <label for="variations">Termos secundários <span class="optional">um por linha</span></label>
+                <textarea id="variations" name="variations" rows="5" placeholder="Tribunal de Contas da Paraíba&#10;Tribunal de Contas do Estado">{{ form.variations if form else '' }}</textarea>
+
+                <label for="period_hours">Período da pesquisa</label>
+                <select id="period_hours" name="period_hours">
+                    <option value="24" {% if not form or form.period_hours == 24 %}selected{% endif %}>Últimas 24 horas</option>
+                    <option value="48" {% if form and form.period_hours == 48 %}selected{% endif %}>Últimas 48 horas</option>
+                    <option value="168" {% if form and form.period_hours == 168 %}selected{% endif %}>Últimos 7 dias</option>
+                    <option value="720" {% if form and form.period_hours == 720 %}selected{% endif %}>Últimos 30 dias</option>
+                </select>
+
+                <button type="submit" class="primary-button" data-loading-text="Pesquisando...">Pesquisar agora</button>
             </form>
-            {% else %}
-            <div class="empty-state">
-                <strong>Cadastre seu primeiro cliente</strong>
-                <p>É necessário ter um cliente antes de criar o monitoramento.</p>
-                <a class="primary-action" href="/clientes">Cadastrar cliente</a>
-            </div>
-            {% endif %}
         </section>
 
         <section class="home-clients-section">
