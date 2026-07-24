@@ -2,10 +2,11 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Resultados | {{ app_name }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/compact.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}?v=0.7.4">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/compact.css') }}?v=0.7.4">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/sprint3.css') }}?v=0.7.4">
 </head>
 <body>
     <main class="page-shell compact-shell">
@@ -15,7 +16,13 @@
         </nav>
 
         <header class="results-header compact-results-header">
-            <span class="eyebrow">Últimas {{ period_hours }} horas</span>
+            <span class="eyebrow">
+                {% if period_hours == 720 %}Últimos 30 dias
+                {% elif period_hours == 168 %}Últimos 7 dias
+                {% elif period_hours == 48 %}Últimas 48 horas
+                {% elif period_hours == 24 %}Últimas 24 horas
+                {% else %}Últimas {{ period_hours }} horas{% endif %}
+            </span>
             <h1>{{ total }} menções</h1>
             {% if monitoring %}<p>{{ monitoring.name }}</p>{% endif %}
         </header>
@@ -34,31 +41,53 @@
             {% for mention in mentions %}
             {% set media_type = mention.media_type.value if mention.media_type.value is defined else mention.media_type %}
             <article class="mention-card compact-mention-card" data-media-type="{{ media_type }}">
-                <div class="mention-meta"><span class="media-badge">Notícia</span><span>{{ mention.source }}</span></div>
+                <div class="mention-meta">
+                    <span class="media-badge">Notícia</span>
+                    <span>{{ mention.source }}</span>
+                </div>
+
                 <h2>{{ mention.title }}</h2>
+
                 {% if mention.published_at %}
-                    {% if mention.published_at.strftime is defined %}<p class="published-at">Publicado em {{ mention.published_at.strftime('%d/%m/%Y às %H:%M') }}</p>
-                    {% else %}<p class="published-at">Publicado em {{ mention.published_at[:16]|replace('T', ' às ') }}</p>{% endif %}
+                    {% if mention.published_at.strftime is defined %}
+                    <p class="published-at">
+                        <time datetime="{{ mention.published_at.isoformat() }}">{{ mention.published_at.strftime('%d/%m/%Y · %H:%M') }}</time>
+                    </p>
+                    {% else %}
+                    <p class="published-at">
+                        <time datetime="{{ mention.published_at }}">{{ mention.published_at[:10].split('-')|reverse|join('/') }} · {{ mention.published_at[11:16] }}</time>
+                    </p>
+                    {% endif %}
                 {% endif %}
-                {% if mention.excerpt and mention.excerpt|striptags|trim != mention.title|trim %}<p class="excerpt">{{ mention.excerpt | striptags }}</p>{% endif %}
+
+                {% if mention.excerpt and mention.excerpt|striptags|trim != mention.title|trim %}
+                <p class="excerpt">{{ mention.excerpt | striptags }}</p>
+                {% endif %}
+
                 <div class="mention-footer">
-                    <span>Termo pesquisado: <strong>{{ mention.searched_term }}</strong></span>
-                    <a href="{{ mention.url }}" target="_blank" rel="noopener noreferrer">Abrir conteúdo ↗</a>
+                    <span>Termo encontrado: <strong>{{ mention.matched_term or mention.searched_term }}</strong></span>
+                    <a class="source-button" href="{{ mention.url }}" target="_blank" rel="noopener noreferrer" aria-label="Abrir matéria no {{ mention.source }}">{{ mention.source }} ↗</a>
                 </div>
             </article>
             {% endfor %}
         </section>
         {% else %}
-        <section class="empty-state"><h2>Nenhuma menção encontrada</h2><a class="primary-link" href="{{ '/historico' if from_history else '/' }}">Voltar</a></section>
+        <section class="empty-state">
+            <h2>Nenhuma menção encontrada</h2>
+            <a class="primary-link" href="{{ '/historico' if from_history else '/' }}">Voltar</a>
+        </section>
         {% endif %}
     </main>
+
     <script>
         const chips = document.querySelectorAll('.filter-chip:not(:disabled)');
         const cards = document.querySelectorAll('.mention-card');
         chips.forEach((chip) => chip.addEventListener('click', () => {
             chips.forEach((item) => item.classList.remove('active'));
             chip.classList.add('active');
-            cards.forEach((card) => { card.hidden = chip.dataset.filter !== 'all' && card.dataset.mediaType !== chip.dataset.filter; });
+            cards.forEach((card) => {
+                card.hidden = chip.dataset.filter !== 'all' && card.dataset.mediaType !== chip.dataset.filter;
+            });
         }));
     </script>
 </body>
