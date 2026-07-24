@@ -8,64 +8,55 @@
     <link rel="stylesheet" href="/static/css/management.css">
 </head>
 <body class="app-body">
-    <header class="app-header">
-        <a href="/clientes" class="icon-button" aria-label="Voltar">←</a>
-        <div class="brand-lockup"><span>OYLUT</span><strong>Clipping</strong></div>
-    </header>
+<header class="app-header">
+    <a href="/clientes" class="icon-button" aria-label="Voltar">←</a>
+    <div class="brand-lockup"><span>OYLUT</span><strong>Clipping</strong></div>
+</header>
+<main class="app-main">
+    <section class="screen-heading">
+        <div><span class="screen-kicker">CLIENTE</span><h1>{{ client.name if client else 'Monitoramentos' }}</h1></div>
+        <span class="count-pill">{{ monitorings|length }}</span>
+    </section>
+    {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
 
-    <main class="app-main">
-        <section class="screen-heading">
-            <div>
-                <span class="screen-kicker">CLIENTE</span>
-                <h1>{{ client.name if client else 'Monitoramentos' }}</h1>
-            </div>
-            <span class="count-pill">{{ monitorings|length }}</span>
-        </section>
+    {% if client %}
+    <section class="list-section">
+        <h2>Monitoramentos</h2>
+        {% if monitorings %}
+        <div class="client-list">
+            {% for monitoring in monitorings %}
+            <details class="management-row">
+                <summary>
+                    <span class="client-avatar">{{ monitoring.name[:1]|upper }}</span>
+                    <span class="client-info"><strong>{{ monitoring.name }}</strong><small>{{ 'Ativo' if monitoring.is_active else 'Inativo' }}</small></span>
+                    <span class="row-arrow">›</span>
+                </summary>
+                <div class="row-actions">
+                    <a href="/monitoramentos/{{ monitoring.id }}" class="primary-button" style="display:block;text-align:center;text-decoration:none">Termos e pesquisa</a>
+                    <form method="post" action="/clientes/{{ client.id }}/monitoramentos/{{ monitoring.id }}/editar" class="inline-edit single-field">
+                        <input type="text" name="name" value="{{ monitoring.name }}" required minlength="2" aria-label="Nome do monitoramento">
+                        <button type="submit" class="text-button">Salvar</button>
+                    </form>
+                    <form method="post" action="/clientes/{{ client.id }}/monitoramentos/{{ monitoring.id }}/status">
+                        <input type="hidden" name="is_active" value="{{ 'false' if monitoring.is_active else 'true' }}">
+                        <button class="text-button" type="submit">{{ 'Desativar' if monitoring.is_active else 'Ativar' }}</button>
+                    </form>
+                </div>
+            </details>
+            {% endfor %}
+        </div>
+        {% else %}<div class="empty-compact">Nenhum monitoramento cadastrado.</div>{% endif %}
+    </section>
 
-        {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
-
-        {% if client %}
-            <section class="app-card">
-                <h2>Novo monitoramento</h2>
-                <form method="post" action="/clientes/{{ client.id }}/monitoramentos" class="stack-form">
-                    <label for="monitoring-name">Nome</label>
-                    <input id="monitoring-name" type="text" name="name" placeholder="Ex.: Institucional" required minlength="2">
-                    <button type="submit" class="primary-button">Cadastrar</button>
-                </form>
-            </section>
-
-            <section class="list-section">
-                <h2>Monitoramentos</h2>
-                {% if monitorings %}
-                    <div class="client-list">
-                        {% for monitoring in monitorings %}
-                            <details class="management-row">
-                                <summary>
-                                    <span class="client-avatar">{{ monitoring.name[:1]|upper }}</span>
-                                    <span class="client-info">
-                                        <strong>{{ monitoring.name }}</strong>
-                                        <small>{{ 'Ativo' if monitoring.is_active else 'Inativo' }}</small>
-                                    </span>
-                                    <span class="row-arrow">›</span>
-                                </summary>
-                                <div class="row-actions">
-                                    <form method="post" action="/clientes/{{ client.id }}/monitoramentos/{{ monitoring.id }}/editar" class="inline-edit single-field">
-                                        <input type="text" name="name" value="{{ monitoring.name }}" required minlength="2" aria-label="Nome do monitoramento">
-                                        <button type="submit" class="text-button">Salvar</button>
-                                    </form>
-                                    <form method="post" action="/clientes/{{ client.id }}/monitoramentos/{{ monitoring.id }}/status">
-                                        <input type="hidden" name="is_active" value="{{ 'false' if monitoring.is_active else 'true' }}">
-                                        <button class="text-button" type="submit">{{ 'Desativar' if monitoring.is_active else 'Ativar' }}</button>
-                                    </form>
-                                </div>
-                            </details>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="empty-compact">Nenhum monitoramento cadastrado.</div>
-                {% endif %}
-            </section>
-        {% endif %}
-    </main>
+    <details class="app-card" style="margin-top:32px">
+        <summary><strong>Novo monitoramento</strong></summary>
+        <form method="post" action="/clientes/{{ client.id }}/monitoramentos" class="stack-form" style="margin-top:20px">
+            <label for="monitoring-name">Nome</label>
+            <input id="monitoring-name" type="text" name="name" placeholder="Ex.: Institucional" required minlength="2">
+            <button type="submit" class="primary-button">Cadastrar</button>
+        </form>
+    </details>
+    {% endif %}
+</main>
 </body>
 </html>
