@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Novo monitoramento | Oylut Clipping</title>
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body class="app-body">
+<header class="app-header">
+    <a href="/" class="icon-button" aria-label="Voltar">←</a>
+    <div class="brand-lockup"><span>OYLUT</span><strong>Clipping</strong></div>
+</header>
+<main class="app-main">
+    <section class="screen-heading">
+        <div><span class="screen-kicker">CADASTRO</span><h1>Novo monitoramento</h1></div>
+    </section>
+    {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+    <section class="app-card">
+        {% if clients %}
+        <form method="post" action="/novo-monitoramento" class="stack-form">
+            <label for="client_id">Cliente</label>
+            <select id="client_id" name="client_id" required>
+                <option value="">Selecione</option>
+                {% for client in clients if client.is_active %}<option value="{{ client.id }}">{{ client.name }}</option>{% endfor %}
+            </select>
+            <label for="name">Nome do monitoramento</label>
+            <input id="name" name="name" type="text" required minlength="2" placeholder="Ex.: Institucional">
+            <label for="main_term">Termo principal</label>
+            <input id="main_term" name="main_term" type="text" required minlength="2" placeholder="Ex.: TCE-PB">
+            <label for="secondary_terms">Termos secundários <span class="optional">um por linha</span></label>
+            <textarea id="secondary_terms" name="secondary_terms" rows="5" placeholder="Tribunal de Contas da Paraíba&#10;Tribunal de Contas do Estado"></textarea>
+            <button type="submit" class="primary-button">Salvar</button>
+        </form>
+        {% else %}
+        <div class="empty-compact">Cadastre um cliente antes de criar um monitoramento.</div>
+        <a class="primary-action" href="/clientes">Cadastrar cliente</a>
+        {% endif %}
+    </section>
+</main>
+</body>
+</html>
