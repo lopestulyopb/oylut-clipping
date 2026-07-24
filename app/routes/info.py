@@ -16,12 +16,12 @@ async def account_page(request: Request) -> HTMLResponse:
         name="info_page.html",
         context={
             "page_title": "Minha Conta",
-            "page_kicker": "CONTA",
+            "page_kicker": "CONFIGURAÇÕES",
             "page_content": [
-                "Área reservada para os dados do usuário e configurações da conta.",
-                "A autenticação e a edição do perfil serão conectadas nesta área em uma próxima etapa.",
+                "Defina como as pesquisas rápidas devem ser tratadas no Oylut Clipping.",
+                "Os monitoramentos vinculados a clientes continuam sendo registrados automaticamente no histórico.",
             ],
-            "version": "0.6.2",
+            "version": "0.8.0",
         },
     )
 
@@ -38,7 +38,7 @@ async def purpose_page(request: Request) -> HTMLResponse:
                 "O Oylut Clipping foi criado para apoiar assessorias e profissionais de comunicação no acompanhamento de menções a clientes, marcas e instituições.",
                 "A proposta é concentrar buscas, resultados e histórico em um fluxo simples, mantendo a avaliação editorial sob responsabilidade humana.",
             ],
-            "version": "0.6.2",
+            "version": "0.8.0",
         },
     )
 
@@ -56,8 +56,9 @@ async def instructions_page(request: Request) -> HTMLResponse:
                 "Crie um monitoramento para organizar o assunto acompanhado.",
                 "Defina um termo principal e adicione termos secundários.",
                 "Abra o monitoramento e toque em Pesquisar.",
-                "Consulte pesquisas anteriores na página Histórico.",
+                "Ative em Minha Conta o salvamento das pesquisas rápidas, quando desejar.",
+                "Consulte e reabra pesquisas anteriores na página Histórico.",
             ],
-            "version": "0.6.2",
+            "version": "0.8.0",
         },
     )
