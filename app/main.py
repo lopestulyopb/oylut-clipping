@@ -22,7 +22,7 @@ settings = get_settings()
 app = FastAPI(
     title=settings.app_name,
     debug=settings.app_debug,
-    version="0.7.0",
+    version="0.7.1",
 )
 
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
@@ -57,6 +57,6 @@ async def health() -> dict[str, str | bool]:
     return {
         "status": "ok",
         "produto": settings.app_name,
-        "versao": "0.7.0",
+        "versao": "0.7.1",
         "banco_configurado": settings.database_configured,
     }
