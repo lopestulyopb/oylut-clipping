@@ -2,126 +2,44 @@
 <html lang="pt-BR">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Termos | Oylut Clipping</title>
-    <link rel="stylesheet" href="/static/css/app.css?v=0.7.4">
-    <link rel="stylesheet" href="/static/css/management.css?v=0.7.4">
-    <link rel="stylesheet" href="/static/css/sprint3.css?v=0.7.4">
+    <link rel="stylesheet" href="/static/css/app.css?v=0.7.7">
+    <link rel="stylesheet" href="/static/css/management.css?v=0.7.7">
+    <link rel="stylesheet" href="/static/css/sprint3.css?v=0.7.7">
+    <link rel="stylesheet" href="/static/css/drawer.css?v=0.7.7">
 </head>
 <body class="app-body">
+{% include "_drawer.html" %}
 <header class="app-header">
     <a href="/clientes/{{ monitoring.client_id if monitoring else '' }}" class="icon-button" aria-label="Voltar">←</a>
     <div class="brand-lockup"><span>OYLUT</span><strong>Clipping</strong></div>
 </header>
-<main class="app-main">
+<main class="app-main drawer-page">
     <section class="screen-heading">
         <div><span class="screen-kicker">MONITORAMENTO</span><h1>{{ monitoring.name if monitoring else 'Termos' }}</h1></div>
         <span class="count-pill">{{ terms|length }}</span>
     </section>
-
     {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
     {% if message %}<div class="alert">{{ message }}</div>{% endif %}
-
     {% if monitoring %}
     <section class="app-card">
         <h2>Pesquisar</h2>
         <form method="post" action="/monitoramentos/{{ monitoring.id }}/pesquisar" class="stack-form search-submit-form">
             <label for="period_hours">Período</label>
-            <select id="period_hours" name="period_hours">
-                <option value="24">Últimas 24 horas</option>
-                <option value="48">Últimas 48 horas</option>
-                <option value="72">Últimas 72 horas</option>
-                <option value="168">Últimos 7 dias</option>
-                <option value="720">Últimos 30 dias</option>
-            </select>
+            <select id="period_hours" name="period_hours"><option value="24">Últimas 24 horas</option><option value="48">Últimas 48 horas</option><option value="72">Últimas 72 horas</option><option value="168">Últimos 7 dias</option><option value="720">Últimos 30 dias</option></select>
             <button type="submit" class="primary-button" data-loading-text="Pesquisando...">Pesquisar</button>
         </form>
     </section>
-
-    <section class="list-section">
-        <h2>Termos cadastrados</h2>
-        {% if terms %}
-        <div class="client-list">
-            {% for term in terms %}
-            <details class="management-row">
-                <summary>
-                    <span class="client-avatar">{{ 'P' if term.is_primary else 'T' }}</span>
-                    <span class="client-info"><strong>{{ term.text }}</strong><small>{{ 'Principal' if term.is_primary else 'Secundário' }} · {{ 'Ativo' if term.is_active else 'Inativo' }}</small></span>
-                    <span class="row-arrow">›</span>
-                </summary>
-                <div class="row-actions">
-                    <form method="post" action="/monitoramentos/{{ monitoring.id }}/termos/{{ term.id }}/editar" class="inline-edit single-field">
-                        <input type="text" name="text" value="{{ term.text }}" required minlength="2">
-                        <button type="submit" class="text-button">Salvar</button>
-                    </form>
-                    <form method="post" action="/monitoramentos/{{ monitoring.id }}/termos/{{ term.id }}/status">
-                        <input type="hidden" name="is_active" value="{{ 'false' if term.is_active else 'true' }}">
-                        <button type="submit" class="text-button">{{ 'Desativar' if term.is_active else 'Ativar' }}</button>
-                    </form>
-                    <form method="post" action="/monitoramentos/{{ monitoring.id }}/termos/{{ term.id }}/excluir" onsubmit="return confirm('Excluir este termo?')">
-                        <button type="submit" class="text-button danger-button">Excluir termo</button>
-                    </form>
-                </div>
-            </details>
-            {% endfor %}
-        </div>
-        {% else %}<div class="empty-compact">Nenhum termo cadastrado.</div>{% endif %}
+    <section class="list-section"><h2>Termos cadastrados</h2>
+        {% if terms %}<div class="client-list">{% for term in terms %}<details class="management-row"><summary><span class="client-avatar">{{ 'P' if term.is_primary else 'T' }}</span><span class="client-info"><strong>{{ term.text }}</strong><small>{{ 'Principal' if term.is_primary else 'Secundário' }} · {{ 'Ativo' if term.is_active else 'Inativo' }}</small></span><span class="row-arrow">›</span></summary><div class="row-actions"><form method="post" action="/monitoramentos/{{ monitoring.id }}/termos/{{ term.id }}/editar" class="inline-edit single-field"><input type="text" name="text" value="{{ term.text }}" required minlength="2"><button type="submit" class="text-button">Salvar</button></form><form method="post" action="/monitoramentos/{{ monitoring.id }}/termos/{{ term.id }}/status"><input type="hidden" name="is_active" value="{{ 'false' if term.is_active else 'true' }}"><button type="submit" class="text-button">{{ 'Desativar' if term.is_active else 'Ativar' }}</button></form><form method="post" action="/monitoramentos/{{ monitoring.id }}/termos/{{ term.id }}/excluir" onsubmit="return confirm('Excluir este termo?')"><button type="submit" class="text-button danger-button">Excluir termo</button></form></div></details>{% endfor %}</div>{% else %}<div class="empty-compact">Nenhum termo cadastrado.</div>{% endif %}
     </section>
-
-    <details class="app-card" style="margin-top:32px">
-        <summary><strong>Novo termo</strong></summary>
-        <form method="post" action="/monitoramentos/{{ monitoring.id }}/termos" class="stack-form" style="margin-top:20px">
-            <label for="term-text">Termo</label>
-            <input id="term-text" type="text" name="text" placeholder="Ex.: TCE-PB" required minlength="2">
-            <label><input type="checkbox" name="is_primary" value="true"> Definir como termo principal</label>
-            <button type="submit" class="primary-button">Cadastrar termo</button>
-        </form>
-    </details>
+    <details class="app-card" style="margin-top:32px"><summary><strong>Novo termo</strong></summary><form method="post" action="/monitoramentos/{{ monitoring.id }}/termos" class="stack-form" style="margin-top:20px"><label for="term-text">Termo</label><input id="term-text" type="text" name="text" placeholder="Ex.: TCE-PB" required minlength="2"><label><input type="checkbox" name="is_primary" value="true"> Definir como termo principal</label><button type="submit" class="primary-button">Cadastrar termo</button></form></details>
     {% endif %}
 </main>
-
-<div class="search-loading" id="search-loading" role="status" aria-live="polite" aria-hidden="true">
-    <div class="search-loading-panel">
-        <div class="search-loading-spinner" aria-hidden="true"></div>
-        <h2>Preparando seu monitoramento</h2>
-        <p>A busca pode levar alguns instantes.</p>
-        <ol class="search-loading-steps">
-            <li class="search-loading-step is-active">Consultando fontes</li>
-            <li class="search-loading-step">Encontrando publicações</li>
-            <li class="search-loading-step">Organizando resultados</li>
-            <li class="search-loading-step">Finalizando pesquisa</li>
-        </ol>
-    </div>
-</div>
-
+<div class="search-loading" id="search-loading" role="status" aria-live="polite" aria-hidden="true"><div class="search-loading-panel"><div class="search-loading-spinner" aria-hidden="true"></div><h2>Preparando seu monitoramento</h2><p>A busca pode levar alguns instantes.</p><ol class="search-loading-steps"><li class="search-loading-step is-active">Consultando fontes</li><li class="search-loading-step">Encontrando publicações</li><li class="search-loading-step">Organizando resultados</li><li class="search-loading-step">Finalizando pesquisa</li></ol></div></div>
 <script>
-    document.querySelectorAll('.search-submit-form').forEach((form) => {
-        form.addEventListener('submit', () => {
-            const button = form.querySelector('button[type="submit"]');
-            const loading = document.getElementById('search-loading');
-            const steps = loading ? Array.from(loading.querySelectorAll('.search-loading-step')) : [];
-
-            if (button) {
-                button.disabled = true;
-                button.textContent = button.dataset.loadingText || 'Pesquisando...';
-            }
-
-            if (loading) {
-                loading.classList.add('is-visible');
-                loading.setAttribute('aria-hidden', 'false');
-                document.body.style.overflow = 'hidden';
-            }
-
-            steps.forEach((step, index) => {
-                window.setTimeout(() => {
-                    steps.forEach((item, itemIndex) => {
-                        item.classList.toggle('is-active', itemIndex === index);
-                        item.classList.toggle('is-complete', itemIndex < index);
-                    });
-                }, index * 1400);
-            });
-        });
-    });
+document.querySelectorAll('.search-submit-form').forEach((form)=>{form.addEventListener('submit',()=>{const button=form.querySelector('button[type="submit"]');const loading=document.getElementById('search-loading');const steps=loading?Array.from(loading.querySelectorAll('.search-loading-step')):[];if(button){button.disabled=true;button.textContent=button.dataset.loadingText||'Pesquisando...';}if(loading){loading.classList.add('is-visible');loading.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';}steps.forEach((step,index)=>{window.setTimeout(()=>{steps.forEach((item,itemIndex)=>{item.classList.toggle('is-active',itemIndex===index);item.classList.toggle('is-complete',itemIndex<index);});},index*1400);});});});
 </script>
 </body>
 </html>
