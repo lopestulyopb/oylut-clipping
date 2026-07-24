@@ -1,0 +1,103 @@
+.compact-shell {
+    width: min(680px, calc(100% - 32px));
+    padding: 28px 0 48px;
+}
+
+.simple-brand {
+    margin-bottom: 22px;
+}
+
+.simple-brand h1 {
+    font-size: clamp(2rem, 8vw, 3.4rem);
+    line-height: 1;
+    letter-spacing: -0.05em;
+}
+
+.compact-card {
+    display: block;
+    padding: 22px;
+}
+
+.compact-card h2 {
+    margin: 0 0 22px;
+    font-size: 1.55rem;
+}
+
+.compact-card form {
+    gap: 8px;
+}
+
+.compact-card label {
+    margin-top: 10px;
+    font-size: 0.95rem;
+}
+
+.compact-card input,
+.compact-card textarea,
+.compact-card select {
+    padding: 13px 14px;
+    border-radius: 12px;
+}
+
+.compact-card textarea {
+    min-height: 104px;
+}
+
+.compact-card button {
+    margin-top: 14px;
+    padding: 14px 18px;
+}
+
+.compact-topbar {
+    margin-bottom: 28px;
+    font-size: 0.95rem;
+}
+
+.compact-results-header {
+    margin-bottom: 18px;
+}
+
+.compact-results-header h1 {
+    font-size: clamp(2.5rem, 12vw, 4.4rem);
+}
+
+.compact-mention-card {
+    padding: 18px;
+    border-radius: 18px;
+}
+
+.compact-mention-card h2 {
+    margin: 12px 0 8px;
+    font-size: clamp(1.15rem, 5vw, 1.45rem);
+    line-height: 1.25;
+}
+
+.compact-mention-card .published-at,
+.compact-mention-card .excerpt {
+    margin: 8px 0 0;
+    font-size: 0.92rem;
+}
+
+.compact-mention-card .mention-footer {
+    margin-top: 14px;
+    padding-top: 12px;
+}
+
+@media (max-width: 720px) {
+    .compact-shell {
+        width: min(100% - 24px, 680px);
+        padding-top: 24px;
+    }
+
+    .compact-card {
+        padding: 18px;
+    }
+
+    .compact-mention-card {
+        padding: 16px;
+    }
+
+    .filter-row {
+        margin-bottom: 16px;
+    }
+}
