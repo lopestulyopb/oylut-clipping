@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 
 from app.database import get_database
 from app.services.search_service import search_mentions
+from app.services.term_service import validate_search_terms
 
 
 class MonitoringSearchService:
@@ -57,6 +58,8 @@ class MonitoringSearchService:
         active_terms = [term["text"] for term in terms if term.get("is_active")]
         if not active_terms:
             raise ValueError("Cadastre e ative ao menos um termo antes de pesquisar.")
+
+        validate_search_terms(active_terms)
 
         rows = await self.database.request(
             "POST", "searches",
