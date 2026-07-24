@@ -6,64 +6,66 @@
     <title>Clientes | Oylut Clipping</title>
     <link rel="stylesheet" href="/static/css/app.css">
 </head>
-<body>
-<main class="container">
-    <header class="page-header">
-        <div>
-            <p class="eyebrow">Oylut Clipping</p>
-            <h1>Clientes</h1>
-            <p>Cadastre as organizações que terão monitoramentos, pesquisas e clippings.</p>
+<body class="app-body">
+    <header class="app-header">
+        <a href="/" class="icon-button" aria-label="Voltar">←</a>
+        <div class="brand-lockup">
+            <span>OYLUT</span>
+            <strong>Clipping</strong>
         </div>
-        <a href="/" class="button secondary">Voltar à busca</a>
     </header>
 
-    {% if error %}
-        <div class="alert">{{ error }}</div>
-    {% endif %}
-
-    <section class="panel">
-        <h2>Novo cliente</h2>
-        <form method="post" action="/clientes" class="stack-form">
-            <label>
-                Nome
-                <input type="text" name="name" placeholder="Ex.: TCE-PB" required minlength="2">
-            </label>
-            <label>
-                URL da logo <span>(opcional)</span>
-                <input type="url" name="logo_url" placeholder="https://...">
-            </label>
-            <button type="submit" class="button">Cadastrar cliente</button>
-        </form>
-    </section>
-
-    <section class="panel">
-        <div class="section-heading">
-            <h2>Clientes cadastrados</h2>
-            <strong>{{ clients|length }}</strong>
-        </div>
-
-        {% if clients %}
-            <div class="client-list">
-                {% for client in clients %}
-                    <article class="client-card">
-                        <div>
-                            <h3>{{ client.name }}</h3>
-                            <p>{{ client.slug }}</p>
-                            <small>Criado em {{ client.created_at[:10] }}</small>
-                        </div>
-                        <form method="post" action="/clientes/{{ client.id }}/status">
-                            <input type="hidden" name="is_active" value="{{ 'false' if client.is_active else 'true' }}">
-                            <button class="button secondary" type="submit">
-                                {{ 'Desativar' if client.is_active else 'Ativar' }}
-                            </button>
-                        </form>
-                    </article>
-                {% endfor %}
+    <main class="app-main">
+        <section class="screen-heading">
+            <div>
+                <span class="screen-kicker">GESTÃO</span>
+                <h1>Clientes</h1>
             </div>
-        {% else %}
-            <p class="empty-state">Nenhum cliente cadastrado ainda.</p>
+            <span class="count-pill">{{ clients|length }}</span>
+        </section>
+
+        {% if error %}
+            <div class="alert alert-error">{{ error }}</div>
         {% endif %}
-    </section>
-</main>
+
+        <section class="app-card">
+            <h2>Novo cliente</h2>
+            <form method="post" action="/clientes" class="stack-form">
+                <label for="name">Nome</label>
+                <input id="name" type="text" name="name" placeholder="Ex.: TCE-PB" required minlength="2">
+
+                <label for="logo_url">Logo <span class="optional">opcional</span></label>
+                <input id="logo_url" type="url" name="logo_url" placeholder="https://...">
+
+                <button type="submit" class="primary-button">Cadastrar</button>
+            </form>
+        </section>
+
+        <section class="list-section">
+            <h2>Clientes cadastrados</h2>
+
+            {% if clients %}
+                <div class="client-list">
+                    {% for client in clients %}
+                        <article class="client-row">
+                            <div class="client-avatar">{{ client.name[:1]|upper }}</div>
+                            <div class="client-info">
+                                <h3>{{ client.name }}</h3>
+                                <span>{{ 'Ativo' if client.is_active else 'Inativo' }}</span>
+                            </div>
+                            <form method="post" action="/clientes/{{ client.id }}/status">
+                                <input type="hidden" name="is_active" value="{{ 'false' if client.is_active else 'true' }}">
+                                <button class="text-button" type="submit">
+                                    {{ 'Desativar' if client.is_active else 'Ativar' }}
+                                </button>
+                            </form>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-compact">Nenhum cliente cadastrado.</div>
+            {% endif %}
+        </section>
+    </main>
 </body>
 </html>
