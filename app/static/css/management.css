@@ -1,0 +1,91 @@
+.management-row {
+    overflow: hidden;
+    background: #161a20;
+    border: 1px solid #343b46;
+    border-radius: 17px;
+}
+
+.management-row summary {
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 13px;
+    padding: 14px;
+    cursor: pointer;
+    list-style: none;
+}
+
+.management-row summary::-webkit-details-marker { display: none; }
+
+.client-info {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+.client-info strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.client-info small { color: #8e96a3; }
+
+.row-arrow {
+    color: #8e96a3;
+    font-size: 1.8rem;
+    transition: transform .2s ease;
+}
+
+.management-row[open] .row-arrow { transform: rotate(90deg); }
+
+.row-actions {
+    display: grid;
+    gap: 10px;
+    padding: 0 14px 14px;
+    border-top: 1px solid #2c323b;
+}
+
+.primary-action {
+    display: block;
+    margin-top: 14px;
+    padding: 12px 14px;
+    color: #11151a;
+    background: #f4f6fb;
+    border-radius: 12px;
+    font-weight: 850;
+    text-align: center;
+    text-decoration: none;
+}
+
+.inline-edit {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    gap: 8px;
+}
+
+.inline-edit.single-field {
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.inline-edit input {
+    min-width: 0;
+    padding: 11px 12px;
+}
+
+.row-actions > form:not(.inline-edit) {
+    display: block;
+}
+
+.row-actions > form:not(.inline-edit) .text-button {
+    width: 100%;
+}
+
+@media (max-width: 620px) {
+    .inline-edit,
+    .inline-edit.single-field {
+        grid-template-columns: 1fr;
+    }
+
+    .inline-edit .text-button { width: 100%; }
+}
