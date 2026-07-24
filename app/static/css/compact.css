@@ -152,7 +152,8 @@
 
 .dashboard-action {
     display: grid;
-    grid-template-columns: 52px 1fr;
+    width: 100%;
+    grid-template-columns: 52px minmax(0, 1fr);
     column-gap: 14px;
     align-items: center;
     padding: 22px;
@@ -161,16 +162,21 @@
     border: 1px solid #343b46;
     border-radius: 20px;
     text-decoration: none;
+    overflow: hidden;
 }
 
 .dashboard-action strong {
+    min-width: 0;
     font-size: 1.15rem;
+    line-height: 1.2;
 }
 
 .dashboard-action small {
     grid-column: 2;
+    min-width: 0;
     margin-top: 4px;
     color: #8e96a3;
+    line-height: 1.4;
 }
 
 .dashboard-primary {
@@ -196,7 +202,46 @@
 @media (max-width: 720px) {
     .compact-shell {
         width: min(100% - 24px, 680px);
-        padding-top: 24px;
+        padding-top: max(24px, env(safe-area-inset-top));
+        padding-bottom: calc(40px + env(safe-area-inset-bottom));
+    }
+
+    .simple-brand {
+        margin-bottom: 18px;
+    }
+
+    .simple-brand h1 {
+        font-size: clamp(2.35rem, 12vw, 3.2rem);
+    }
+
+    .dashboard-grid {
+        display: grid;
+        gap: 12px;
+        margin-top: 28px;
+    }
+
+    .dashboard-action {
+        display: grid;
+        width: 100%;
+        grid-template-columns: 48px minmax(0, 1fr);
+        column-gap: 13px;
+        padding: 18px;
+        border-radius: 18px;
+    }
+
+    .dashboard-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+    }
+
+    .dashboard-action strong {
+        font-size: 1.05rem;
+    }
+
+    .dashboard-action small {
+        font-size: 0.86rem;
+        overflow-wrap: anywhere;
     }
 
     .compact-card {
