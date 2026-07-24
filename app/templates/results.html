@@ -4,278 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Resultados | {{ app_name }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}?v=0.7.6">
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/compact.css') }}?v=0.7.6">
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/sprint3.css') }}?v=0.7.6">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}?v=0.7.7">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/compact.css') }}?v=0.7.7">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/sprint3.css') }}?v=0.7.7">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/drawer.css') }}?v=0.7.7">
 </head>
-<body>
-    <main class="page-shell compact-shell">
+<body class="app-body">
+    {% include "_drawer.html" %}
+    <main class="page-shell compact-shell drawer-page">
         <nav class="topbar compact-topbar">
             <a class="back-link" href="{{ '/historico' if from_history else ('/monitoramentos/' ~ monitoring.id if monitoring else '/') }}">← {{ 'Histórico' if from_history else ('Monitoramento' if monitoring else 'Início') }}</a>
             <span>Oylut Clipping</span>
         </nav>
-
         <header class="results-header compact-results-header">
-            <span class="eyebrow">
-                {% if period_hours == 720 %}Últimos 30 dias
-                {% elif period_hours == 168 %}Últimos 7 dias
-                {% elif period_hours == 48 %}Últimas 48 horas
-                {% elif period_hours == 24 %}Últimas 24 horas
-                {% else %}Últimas {{ period_hours }} horas{% endif %}
-            </span>
+            <span class="eyebrow">{% if period_hours == 720 %}Últimos 30 dias{% elif period_hours == 168 %}Últimos 7 dias{% elif period_hours == 48 %}Últimas 48 horas{% elif period_hours == 24 %}Últimas 24 horas{% else %}Últimas {{ period_hours }} horas{% endif %}</span>
             <h1>{{ total }} menções</h1>
             {% if monitoring %}<p>{{ monitoring.name }}</p>{% endif %}
         </header>
-
         {% for error in errors %}<div class="alert alert-error">{{ error }}</div>{% endfor %}
-
         {% if mentions %}
         <section class="results-controls" aria-label="Ferramentas dos resultados">
-            <div class="results-summary" aria-live="polite">
-                <strong><span id="visible-count">{{ total }}</span> resultados</strong>
-                <span><span id="selected-count">0</span> selecionadas</span>
-            </div>
-
+            <div class="results-summary" aria-live="polite"><strong><span id="visible-count">{{ total }}</span> resultados</strong><span><span id="selected-count">0</span> selecionadas</span></div>
             <div class="compact-action-row">
-                <button id="filters-toggle" class="compact-action-button" type="button" aria-expanded="false" aria-controls="filters-panel">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M7 12h10M10 19h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                    <span>Filtros</span>
-                </button>
+                <button id="filters-toggle" class="compact-action-button" type="button" aria-expanded="false" aria-controls="filters-panel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M7 12h10M10 19h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Filtros</span></button>
                 <button id="select-visible" class="compact-action-button" type="button">Selecionar</button>
                 <button id="create-clipping" class="compact-action-button compact-action-primary" type="button" disabled>Criar clipping (0)</button>
             </div>
-
             <div id="filters-panel" class="filters-panel" hidden>
                 <div class="results-filters">
-                    <label>
-                        <span>Veículo</span>
-                        <select id="source-filter">
-                            <option value="all">Todos os veículos</option>
-                        </select>
-                    </label>
-                    <label>
-                        <span>Termo encontrado</span>
-                        <select id="term-filter">
-                            <option value="all">Todos os termos</option>
-                        </select>
-                    </label>
-                    <label>
-                        <span>Ordenação</span>
-                        <select id="sort-filter">
-                            <option value="newest">Mais recentes</option>
-                            <option value="oldest">Mais antigos</option>
-                        </select>
-                    </label>
-                    <label class="selected-only-control">
-                        <input id="selected-only" type="checkbox">
-                        <span>Somente selecionadas</span>
-                    </label>
+                    <label><span>Veículo</span><select id="source-filter"><option value="all">Todos os veículos</option></select></label>
+                    <label><span>Termo encontrado</span><select id="term-filter"><option value="all">Todos os termos</option></select></label>
+                    <label><span>Ordenação</span><select id="sort-filter"><option value="newest">Mais recentes</option><option value="oldest">Mais antigos</option></select></label>
+                    <label class="selected-only-control"><input id="selected-only" type="checkbox"><span>Somente selecionadas</span></label>
                 </div>
-                <div class="filter-panel-actions">
-                    <button id="reset-filters" class="text-button" type="button">Limpar filtros</button>
-                    <button id="clear-selection" class="text-button" type="button" disabled>Limpar seleção</button>
-                </div>
+                <div class="filter-panel-actions"><button id="reset-filters" class="text-button" type="button">Limpar filtros</button><button id="clear-selection" class="text-button" type="button" disabled>Limpar seleção</button></div>
             </div>
         </section>
-
         <section id="results-list" class="results-list" aria-label="Menções encontradas">
-            {% for mention in mentions %}
-            {% set media_type = mention.media_type.value if mention.media_type.value is defined else mention.media_type %}
-            {% set found_term = mention.matched_term or mention.searched_term %}
-            <article class="mention-card compact-mention-card"
-                     data-media-type="{{ media_type }}"
-                     data-source="{{ mention.source|e }}"
-                     data-term="{{ found_term|e }}"
-                     data-timestamp="{% if mention.published_at %}{% if mention.published_at.timestamp is defined %}{{ mention.published_at.timestamp() }}{% else %}{{ mention.published_at }}{% endif %}{% else %}0{% endif %}"
-                     data-selection-id="{{ mention.url|e }}">
-                <label class="mention-selector" aria-label="Selecionar notícia">
-                    <input class="mention-checkbox" type="checkbox">
-                    <span>Selecionar</span>
-                </label>
-
-                <div class="mention-meta">
-                    <span class="media-badge">Notícia</span>
-                    <span>{{ mention.source }}</span>
-                </div>
-
+            {% for mention in mentions %}{% set media_type = mention.media_type.value if mention.media_type.value is defined else mention.media_type %}{% set found_term = mention.matched_term or mention.searched_term %}
+            <article class="mention-card compact-mention-card" data-media-type="{{ media_type }}" data-source="{{ mention.source|e }}" data-term="{{ found_term|e }}" data-timestamp="{% if mention.published_at %}{% if mention.published_at.timestamp is defined %}{{ mention.published_at.timestamp() }}{% else %}{{ mention.published_at }}{% endif %}{% else %}0{% endif %}" data-selection-id="{{ mention.url|e }}">
+                <label class="mention-selector" aria-label="Selecionar notícia"><input class="mention-checkbox" type="checkbox"><span>Selecionar</span></label>
+                <div class="mention-meta"><span class="media-badge">Notícia</span><span>{{ mention.source }}</span></div>
                 <h2>{{ mention.title }}</h2>
-
-                {% if mention.published_at %}
-                    {% if mention.published_at.strftime is defined %}
-                    <p class="published-at"><time datetime="{{ mention.published_at.isoformat() }}">{{ mention.published_at.strftime('%d/%m/%Y · %H:%M') }}</time></p>
-                    {% else %}
-                    <p class="published-at"><time datetime="{{ mention.published_at }}">{{ mention.published_at[:10].split('-')|reverse|join('/') }} · {{ mention.published_at[11:16] }}</time></p>
-                    {% endif %}
-                {% endif %}
-
-                {% if mention.excerpt and mention.excerpt|striptags|trim != mention.title|trim %}
-                <p class="excerpt">{{ mention.excerpt | striptags }}</p>
-                {% endif %}
-
-                <div class="mention-footer">
-                    <span>Termo encontrado: <strong>{{ found_term }}</strong></span>
-                    <a class="source-button" href="{{ mention.url }}" target="_blank" rel="noopener noreferrer" aria-label="Abrir matéria no {{ mention.source }}">{{ mention.source }} ↗</a>
-                </div>
-            </article>
-            {% endfor %}
+                {% if mention.published_at %}{% if mention.published_at.strftime is defined %}<p class="published-at"><time datetime="{{ mention.published_at.isoformat() }}">{{ mention.published_at.strftime('%d/%m/%Y · %H:%M') }}</time></p>{% else %}<p class="published-at"><time datetime="{{ mention.published_at }}">{{ mention.published_at[:10].split('-')|reverse|join('/') }} · {{ mention.published_at[11:16] }}</time></p>{% endif %}{% endif %}
+                {% if mention.excerpt and mention.excerpt|striptags|trim != mention.title|trim %}<p class="excerpt">{{ mention.excerpt | striptags }}</p>{% endif %}
+                <div class="mention-footer"><span>Termo encontrado: <strong>{{ found_term }}</strong></span><a class="source-button" href="{{ mention.url }}" target="_blank" rel="noopener noreferrer" aria-label="Abrir matéria no {{ mention.source }}">{{ mention.source }} ↗</a></div>
+            </article>{% endfor %}
         </section>
-
-        <section id="filtered-empty" class="empty-state" hidden>
-            <h2>Nenhum resultado corresponde aos filtros</h2>
-            <button id="empty-reset-filters" class="secondary-button" type="button">Limpar filtros</button>
-        </section>
-        {% else %}
-        <section class="empty-state">
-            <h2>Nenhuma menção encontrada</h2>
-            <a class="primary-link" href="{{ '/historico' if from_history else '/' }}">Voltar</a>
-        </section>
-        {% endif %}
+        <section id="filtered-empty" class="empty-state" hidden><h2>Nenhum resultado corresponde aos filtros</h2><button id="empty-reset-filters" class="secondary-button" type="button">Limpar filtros</button></section>
+        {% else %}<section class="empty-state"><h2>Nenhuma menção encontrada</h2><a class="primary-link" href="{{ '/historico' if from_history else '/' }}">Voltar</a></section>{% endif %}
     </main>
-
     {% if mentions %}
     <script>
-        const list = document.getElementById('results-list');
-        const cards = [...document.querySelectorAll('.mention-card')];
-        const sourceFilter = document.getElementById('source-filter');
-        const termFilter = document.getElementById('term-filter');
-        const sortFilter = document.getElementById('sort-filter');
-        const selectedOnly = document.getElementById('selected-only');
-        const visibleCount = document.getElementById('visible-count');
-        const selectedCount = document.getElementById('selected-count');
-        const selectVisibleButton = document.getElementById('select-visible');
-        const clearSelectionButton = document.getElementById('clear-selection');
-        const createClippingButton = document.getElementById('create-clipping');
-        const filtersToggle = document.getElementById('filters-toggle');
-        const filtersPanel = document.getElementById('filters-panel');
-        const filteredEmpty = document.getElementById('filtered-empty');
-        const resetFiltersButton = document.getElementById('reset-filters');
-        const emptyResetFiltersButton = document.getElementById('empty-reset-filters');
-        const selectedIds = new Set();
-
-        const normalize = (value) => value.trim().toLocaleLowerCase('pt-BR');
-
-        function populateSelect(select, values) {
-            [...new Set(values)].sort((a, b) => a.localeCompare(b, 'pt-BR')).forEach((value) => {
-                const option = document.createElement('option');
-                option.value = normalize(value);
-                option.textContent = value;
-                select.appendChild(option);
-            });
-        }
-
-        populateSelect(sourceFilter, cards.map((card) => card.dataset.source));
-        populateSelect(termFilter, cards.map((card) => card.dataset.term));
-
-        function selectedCards() {
-            return cards.filter((card) => selectedIds.has(card.dataset.selectionId));
-        }
-
-        function visibleCards() {
-            return cards.filter((card) => !card.hidden);
-        }
-
-        function updateSelectionUI() {
-            cards.forEach((card) => {
-                const isSelected = selectedIds.has(card.dataset.selectionId);
-                card.classList.toggle('is-selected', isSelected);
-                card.querySelector('.mention-checkbox').checked = isSelected;
-            });
-
-            const count = selectedIds.size;
-            selectedCount.textContent = count;
-            clearSelectionButton.disabled = count === 0;
-            createClippingButton.disabled = count === 0;
-            createClippingButton.textContent = `Criar clipping (${count})`;
-        }
-
-        function applyFilters() {
-            const selectedSource = sourceFilter.value;
-            const selectedTerm = termFilter.value;
-            const showOnlySelected = selectedOnly.checked;
-
-            cards.forEach((card) => {
-                const sourceMatches = selectedSource === 'all' || normalize(card.dataset.source) === selectedSource;
-                const termMatches = selectedTerm === 'all' || normalize(card.dataset.term) === selectedTerm;
-                const selectionMatches = !showOnlySelected || selectedIds.has(card.dataset.selectionId);
-                card.hidden = !(sourceMatches && termMatches && selectionMatches);
-            });
-
-            const direction = sortFilter.value === 'oldest' ? 1 : -1;
-            cards.slice().sort((a, b) => direction * (Number(a.dataset.timestamp) - Number(b.dataset.timestamp))).forEach((card) => list.appendChild(card));
-
-            const visible = visibleCards();
-            visibleCount.textContent = visible.length;
-            filteredEmpty.hidden = visible.length !== 0;
-            list.hidden = visible.length === 0;
-            selectVisibleButton.disabled = visible.length === 0;
-            selectVisibleButton.textContent = visible.length > 0 && visible.every((card) => selectedIds.has(card.dataset.selectionId))
-                ? 'Desmarcar'
-                : 'Selecionar';
-        }
-
-        function resetFilters() {
-            sourceFilter.value = 'all';
-            termFilter.value = 'all';
-            sortFilter.value = 'newest';
-            selectedOnly.checked = false;
-            applyFilters();
-        }
-
-        filtersToggle.addEventListener('click', () => {
-            const willOpen = filtersPanel.hidden;
-            filtersPanel.hidden = !willOpen;
-            filtersToggle.setAttribute('aria-expanded', String(willOpen));
-            filtersToggle.classList.toggle('is-active', willOpen);
-        });
-
-        cards.forEach((card) => {
-            const checkbox = card.querySelector('.mention-checkbox');
-            checkbox.addEventListener('change', () => {
-                if (checkbox.checked) selectedIds.add(card.dataset.selectionId);
-                else selectedIds.delete(card.dataset.selectionId);
-                updateSelectionUI();
-                applyFilters();
-            });
-        });
-
-        [sourceFilter, termFilter, sortFilter, selectedOnly].forEach((control) => control.addEventListener('change', applyFilters));
-
-        selectVisibleButton.addEventListener('click', () => {
-            const visible = visibleCards();
-            const allSelected = visible.every((card) => selectedIds.has(card.dataset.selectionId));
-            visible.forEach((card) => {
-                if (allSelected) selectedIds.delete(card.dataset.selectionId);
-                else selectedIds.add(card.dataset.selectionId);
-            });
-            updateSelectionUI();
-            applyFilters();
-        });
-
-        clearSelectionButton.addEventListener('click', () => {
-            selectedIds.clear();
-            updateSelectionUI();
-            applyFilters();
-        });
-
-        resetFiltersButton.addEventListener('click', resetFilters);
-        emptyResetFiltersButton.addEventListener('click', resetFilters);
-
-        createClippingButton.addEventListener('click', () => {
-            if (!selectedIds.size) return;
-            const selectedItems = selectedCards().map((card) => ({
-                id: card.dataset.selectionId,
-                source: card.dataset.source,
-                term: card.dataset.term,
-                title: card.querySelector('h2').textContent.trim(),
-                url: card.querySelector('.source-button').href
-            }));
-            sessionStorage.setItem('oylutSelectedClippingItems', JSON.stringify(selectedItems));
-            window.alert(`${selectedItems.length} notícia(s) preparada(s) para a criação do clipping. A tela de revisão será conectada na Sprint 6.`);
-        });
-
-        updateSelectionUI();
-        applyFilters();
-    </script>
-    {% endif %}
+        const list=document.getElementById('results-list');const cards=[...document.querySelectorAll('.mention-card')];const sourceFilter=document.getElementById('source-filter');const termFilter=document.getElementById('term-filter');const sortFilter=document.getElementById('sort-filter');const selectedOnly=document.getElementById('selected-only');const visibleCount=document.getElementById('visible-count');const selectedCount=document.getElementById('selected-count');const selectVisibleButton=document.getElementById('select-visible');const clearSelectionButton=document.getElementById('clear-selection');const createClippingButton=document.getElementById('create-clipping');const filtersToggle=document.getElementById('filters-toggle');const filtersPanel=document.getElementById('filters-panel');const filteredEmpty=document.getElementById('filtered-empty');const resetFiltersButton=document.getElementById('reset-filters');const emptyResetFiltersButton=document.getElementById('empty-reset-filters');
+        const storageKey='oylutSelection:{{ monitoring.id if monitoring else "quick-search" }}:{{ period_hours }}';
+        let stored=[];try{stored=JSON.parse(sessionStorage.getItem(storageKey)||'[]');}catch(error){stored=[];}const availableIds=new Set(cards.map(card=>card.dataset.selectionId));const selectedIds=new Set(stored.filter(id=>availableIds.has(id)));
+        const normalize=value=>value.trim().toLocaleLowerCase('pt-BR');
+        function persistSelection(){sessionStorage.setItem(storageKey,JSON.stringify([...selectedIds]));}
+        function populateSelect(select,values){[...new Set(values)].sort((a,b)=>a.localeCompare(b,'pt-BR')).forEach(value=>{const option=document.createElement('option');option.value=normalize(value);option.textContent=value;select.appendChild(option);});}
+        populateSelect(sourceFilter,cards.map(card=>card.dataset.source));populateSelect(termFilter,cards.map(card=>card.dataset.term));
+        const selectedCards=()=>cards.filter(card=>selectedIds.has(card.dataset.selectionId));const visibleCards=()=>cards.filter(card=>!card.hidden);
+        function updateSelectionUI(){cards.forEach(card=>{const isSelected=selectedIds.has(card.dataset.selectionId);card.classList.toggle('is-selected',isSelected);card.querySelector('.mention-checkbox').checked=isSelected;});const count=selectedIds.size;selectedCount.textContent=count;clearSelectionButton.disabled=count===0;createClippingButton.disabled=count===0;createClippingButton.textContent=`Criar clipping (${count})`;persistSelection();}
+        function applyFilters(){const selectedSource=sourceFilter.value;const selectedTerm=termFilter.value;const showOnlySelected=selectedOnly.checked;cards.forEach(card=>{const sourceMatches=selectedSource==='all'||normalize(card.dataset.source)===selectedSource;const termMatches=selectedTerm==='all'||normalize(card.dataset.term)===selectedTerm;const selectionMatches=!showOnlySelected||selectedIds.has(card.dataset.selectionId);card.hidden=!(sourceMatches&&termMatches&&selectionMatches);});const direction=sortFilter.value==='oldest'?1:-1;cards.slice().sort((a,b)=>direction*(Number(a.dataset.timestamp)-Number(b.dataset.timestamp))).forEach(card=>list.appendChild(card));const visible=visibleCards();visibleCount.textContent=visible.length;filteredEmpty.hidden=visible.length!==0;list.hidden=visible.length===0;selectVisibleButton.disabled=visible.length===0;selectVisibleButton.textContent=visible.length>0&&visible.every(card=>selectedIds.has(card.dataset.selectionId))?'Desmarcar':'Selecionar';}
+        function resetFilters(){sourceFilter.value='all';termFilter.value='all';sortFilter.value='newest';selectedOnly.checked=false;applyFilters();}
+        filtersToggle.addEventListener('click',()=>{const willOpen=filtersPanel.hidden;filtersPanel.hidden=!willOpen;filtersToggle.setAttribute('aria-expanded',String(willOpen));filtersToggle.classList.toggle('is-active',willOpen);});
+        cards.forEach(card=>card.querySelector('.mention-checkbox').addEventListener('change',event=>{event.target.checked?selectedIds.add(card.dataset.selectionId):selectedIds.delete(card.dataset.selectionId);updateSelectionUI();applyFilters();}));
+        [sourceFilter,termFilter,sortFilter,selectedOnly].forEach(control=>control.addEventListener('change',applyFilters));
+        selectVisibleButton.addEventListener('click',()=>{const visible=visibleCards();const allSelected=visible.every(card=>selectedIds.has(card.dataset.selectionId));visible.forEach(card=>allSelected?selectedIds.delete(card.dataset.selectionId):selectedIds.add(card.dataset.selectionId));updateSelectionUI();applyFilters();});
+        clearSelectionButton.addEventListener('click',()=>{selectedIds.clear();updateSelectionUI();applyFilters();});resetFiltersButton.addEventListener('click',resetFilters);emptyResetFiltersButton.addEventListener('click',resetFilters);
+        createClippingButton.addEventListener('click',()=>{if(!selectedIds.size)return;const selectedItems=selectedCards().map(card=>({id:card.dataset.selectionId,source:card.dataset.source,term:card.dataset.term,title:card.querySelector('h2').textContent.trim(),url:card.querySelector('.source-button').href}));sessionStorage.setItem('oylutSelectedClippingItems',JSON.stringify(selectedItems));window.alert(`${selectedItems.length} notícia(s) preparada(s) para a criação do clipping. A tela de revisão será conectada na Sprint 6.`);});
+        updateSelectionUI();applyFilters();
+    </script>{% endif %}
 </body>
 </html>
