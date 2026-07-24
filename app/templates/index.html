@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{{ app_name }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}?v=0.7.3">
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/compact.css') }}?v=0.7.3">
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/management.css') }}?v=0.7.3">
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/drawer.css') }}?v=0.7.3">
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/sprint5.css') }}?v=0.7.3">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}?v=0.7.4">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/compact.css') }}?v=0.7.4">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/management.css') }}?v=0.7.4">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/drawer.css') }}?v=0.7.4">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/sprint5.css') }}?v=0.7.4">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/sprint3.css') }}?v=0.7.4">
 </head>
 <body class="app-body">
     {% include "_drawer.html" %}
@@ -24,7 +25,7 @@
         {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
 
         <section class="app-card workspace-form-card">
-            <form method="post" action="/pesquisar" class="stack-form submit-lock-form">
+            <form method="post" action="/pesquisar" class="stack-form search-submit-form">
                 <label for="main_term">Termo principal</label>
                 <input id="main_term" name="main_term" type="text" required minlength="2" value="{{ form.main_term if form else '' }}" placeholder="Ex.: TCE-PB">
 
@@ -61,13 +62,47 @@
             {% else %}<div class="empty-compact">Nenhum cliente cadastrado.</div>{% endif %}
         </section>
     </main>
+
+    <div class="search-loading" id="search-loading" role="status" aria-live="polite" aria-hidden="true">
+        <div class="search-loading-panel">
+            <div class="search-loading-spinner" aria-hidden="true"></div>
+            <h2>Preparando seu monitoramento</h2>
+            <p>A busca pode levar alguns instantes.</p>
+            <ol class="search-loading-steps">
+                <li class="search-loading-step is-active">Consultando fontes</li>
+                <li class="search-loading-step">Encontrando publicações</li>
+                <li class="search-loading-step">Organizando resultados</li>
+                <li class="search-loading-step">Finalizando pesquisa</li>
+            </ol>
+        </div>
+    </div>
+
     <script>
-        document.querySelectorAll('.submit-lock-form').forEach((form) => {
+        document.querySelectorAll('.search-submit-form').forEach((form) => {
             form.addEventListener('submit', () => {
                 const button = form.querySelector('button[type="submit"]');
-                if (!button) return;
-                button.disabled = true;
-                button.textContent = button.dataset.loadingText || 'Processando...';
+                const loading = document.getElementById('search-loading');
+                const steps = loading ? Array.from(loading.querySelectorAll('.search-loading-step')) : [];
+
+                if (button) {
+                    button.disabled = true;
+                    button.textContent = button.dataset.loadingText || 'Pesquisando...';
+                }
+
+                if (loading) {
+                    loading.classList.add('is-visible');
+                    loading.setAttribute('aria-hidden', 'false');
+                    document.body.style.overflow = 'hidden';
+                }
+
+                steps.forEach((step, index) => {
+                    window.setTimeout(() => {
+                        steps.forEach((item, itemIndex) => {
+                            item.classList.toggle('is-active', itemIndex === index);
+                            item.classList.toggle('is-complete', itemIndex < index);
+                        });
+                    }, index * 1400);
+                });
             });
         });
     </script>
