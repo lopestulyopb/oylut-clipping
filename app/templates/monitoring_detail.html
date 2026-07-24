@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Termos | Oylut Clipping</title>
+    <link rel="stylesheet" href="/static/css/app.css">
+    <link rel="stylesheet" href="/static/css/management.css">
+</head>
+<body class="app-body">
+<header class="app-header">
+    <a href="/clientes/{{ monitoring.client_id if monitoring else '' }}" class="icon-button" aria-label="Voltar">←</a>
+    <div class="brand-lockup"><span>OYLUT</span><strong>Clipping</strong></div>
+</header>
+<main class="app-main">
+    <section class="screen-heading">
+        <div><span class="screen-kicker">MONITORAMENTO</span><h1>{{ monitoring.name if monitoring else 'Termos' }}</h1></div>
+        <span class="count-pill">{{ terms|length }}</span>
+    </section>
+
+    {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+    {% if message %}<div class="alert">{{ message }}</div>{% endif %}
+
+    {% if monitoring %}
+    <section class="app-card">
+        <h2>Pesquisar agora</h2>
+        <form method="post" action="/monitoramentos/{{ monitoring.id }}/pesquisar" class="stack-form">
+            <label for="period_hours">Período</label>
+            <select id="period_hours" name="period_hours">
+                <option value="24">Últimas 24 horas</option>
+                <option value="48">Últimas 48 horas</option>
+                <option value="72">Últimas 72 horas</option>
+                <option value="168">Últimos 7 dias</option>
+            </select>
+            <button type="submit" class="primary-button">Pesquisar agora</button>
+        </form>
+    </section>
+
+    <section class="list-section">
+        <h2>Termos cadastrados</h2>
+        {% if terms %}
+        <div class="client-list">
+            {% for term in terms %}
+            <details class="management-row">
+                <summary>
+                    <span class="client-avatar">{{ 'P' if term.is_primary else 'T' }}</span>
+                    <span class="client-info"><strong>{{ term.text }}</strong><small>{{ 'Principal' if term.is_primary else 'Secundário' }} · {{ 'Ativo' if term.is_active else 'Inativo' }}</small></span>
+                    <span class="row-arrow">›</span>
+                </summary>
+                <div class="row-actions">
+                    <form method="post" action="/monitoramentos/{{ monitoring.id }}/termos/{{ term.id }}/editar" class="inline-edit single-field">
+                        <input type="text" name="text" value="{{ term.text }}" required minlength="2">
+                        <button type="submit" class="text-button">Salvar</button>
+                    </form>
+                    <form method="post" action="/monitoramentos/{{ monitoring.id }}/termos/{{ term.id }}/status">
+                        <input type="hidden" name="is_active" value="{{ 'false' if term.is_active else 'true' }}">
+                        <button type="submit" class="text-button">{{ 'Desativar' if term.is_active else 'Ativar' }}</button>
+                    </form>
+                    <form method="post" action="/monitoramentos/{{ monitoring.id }}/termos/{{ term.id }}/excluir">
+                        <button type="submit" class="text-button">Excluir</button>
+                    </form>
+                </div>
+            </details>
+            {% endfor %}
+        </div>
+        {% else %}<div class="empty-compact">Nenhum termo cadastrado.</div>{% endif %}
+    </section>
+
+    <details class="app-card" style="margin-top:32px">
+        <summary><strong>Novo termo</strong></summary>
+        <form method="post" action="/monitoramentos/{{ monitoring.id }}/termos" class="stack-form" style="margin-top:20px">
+            <label for="term-text">Termo</label>
+            <input id="term-text" type="text" name="text" placeholder="Ex.: TCE-PB" required minlength="2">
+            <label><input type="checkbox" name="is_primary" value="true"> Definir como termo principal</label>
+            <button type="submit" class="primary-button">Cadastrar termo</button>
+        </form>
+    </details>
+    {% endif %}
+</main>
+</body>
+</html>
