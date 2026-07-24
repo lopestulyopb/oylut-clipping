@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timezone
 from pathlib import Path
 
 import httpx
@@ -38,27 +38,22 @@ async def create_schedule(
     monitoring_id: str = Form(...),
     start_date: str = Form(...),
     end_date: str = Form(""),
-    start_time: str = Form(...),
-    end_time: str = Form(...),
+    delivery_time: str = Form(...),
 ) -> RedirectResponse:
-    start_clock = datetime.strptime(start_time, "%H:%M")
-    end_clock = datetime.strptime(end_time, "%H:%M")
-    if end_clock <= start_clock:
-        end_clock += timedelta(days=1)
-    period_hours = max(1, int((end_clock - start_clock).total_seconds() // 3600))
-
+    now = datetime.now(timezone.utc)
     await schedule_service.create(
         {
             "monitoring_id": monitoring_id,
             "frequency": "daily",
             "weekday": None,
-            "window_start_time": start_time,
-            "run_time": end_time,
+            "window_start_time": None,
+            "run_time": delivery_time,
             "start_date": start_date,
             "end_date": end_date or None,
-            "period_hours": period_hours,
+            "period_hours": 24,
             "timezone": "America/Fortaleza",
             "is_active": True,
+            "last_run_at": now.isoformat(),
         }
     )
     return RedirectResponse(url="/agendamentos", status_code=303)
