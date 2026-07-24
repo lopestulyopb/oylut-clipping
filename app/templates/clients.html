@@ -1,20 +1,66 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Clientes | Oylut Clipping</title>
-    <link rel="stylesheet" href="/static/css/app.css?v=0.7.0"><link rel="stylesheet" href="/static/css/management.css?v=0.7.0"><link rel="stylesheet" href="/static/css/drawer.css?v=0.7.0">
+    <link rel="stylesheet" href="/static/css/app.css?v=0.7.2">
+    <link rel="stylesheet" href="/static/css/management.css?v=0.7.2">
+    <link rel="stylesheet" href="/static/css/drawer.css?v=0.7.2">
 </head>
 <body class="app-body">
     {% include "_drawer.html" %}
-    <header class="app-header"><a href="/" class="icon-button" aria-label="Voltar">←</a><div class="brand-lockup"><span>OYLUT</span><strong>Clipping</strong></div></header>
+    <header class="app-header drawer-aware-header">
+        <a href="/" class="icon-button" aria-label="Voltar">←</a>
+        <div class="brand-lockup"><span>OYLUT</span><strong>Clipping</strong></div>
+    </header>
     <main class="app-main drawer-page">
-        <section class="screen-heading"><div><span class="screen-kicker">GESTÃO</span><h1>Clientes</h1></div><span class="count-pill">{{ clients|length }}</span></section>
-        {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
-        <section class="list-section"><h2>Clientes cadastrados</h2>
-            {% if clients %}<div class="client-list">{% for client in clients %}<details class="management-row"><summary><span class="client-avatar">{{ client.name[:1]|upper }}</span><span class="client-info"><strong>{{ client.name }}</strong><small>{{ 'Ativo' if client.is_active else 'Inativo' }}</small></span><span class="row-arrow">›</span></summary><div class="row-actions"><a class="primary-action" href="/clientes/{{ client.id }}">Monitoramentos</a><form method="post" action="/clientes/{{ client.id }}/editar" class="inline-edit"><input type="text" name="name" value="{{ client.name }}" required minlength="2" aria-label="Nome do cliente"><input type="url" name="logo_url" value="{{ client.logo_url or '' }}" placeholder="Logo opcional" aria-label="Logo do cliente"><button type="submit" class="text-button">Salvar</button></form><form method="post" action="/clientes/{{ client.id }}/status"><input type="hidden" name="is_active" value="{{ 'false' if client.is_active else 'true' }}"><button class="text-button" type="submit">{{ 'Desativar' if client.is_active else 'Ativar' }}</button></form><form method="post" action="/clientes/{{ client.id }}/excluir" onsubmit="return confirm('Excluir este cliente e todos os monitoramentos, termos e resultados?')"><button class="text-button danger-button" type="submit">Excluir cliente</button></form></div></details>{% endfor %}</div>{% else %}<div class="empty-compact">Nenhum cliente cadastrado.</div>{% endif %}
+        <section class="screen-heading">
+            <div><span class="screen-kicker">GESTÃO</span><h1>Clientes</h1></div>
+            <span class="count-pill">{{ clients|length }}</span>
         </section>
-        <details class="app-card" style="margin-top:32px"><summary><strong>Novo cliente</strong></summary><form method="post" action="/clientes" class="stack-form" style="margin-top:20px"><label for="name">Nome</label><input id="name" type="text" name="name" placeholder="Ex.: Cliente principal" required minlength="2"><label for="logo_url">Logo <span class="optional">opcional</span></label><input id="logo_url" type="url" name="logo_url" placeholder="https://..."><button type="submit" class="primary-button">Cadastrar</button></form></details>
+        {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+
+        <section class="list-section">
+            <h2>Clientes cadastrados</h2>
+            {% if clients %}
+            <div class="client-list">
+                {% for client in clients %}
+                <details class="management-row">
+                    <summary>
+                        <span class="client-avatar">{{ client.name[:1]|upper }}</span>
+                        <span class="client-info"><strong>{{ client.name }}</strong><small>{{ 'Ativo' if client.is_active else 'Inativo' }}</small></span>
+                        <span class="row-arrow">›</span>
+                    </summary>
+                    <div class="row-actions client-actions">
+                        <a class="primary-action" href="/clientes/{{ client.id }}">Monitoramentos</a>
+                        <form method="post" action="/clientes/{{ client.id }}/editar" class="client-inline-edit">
+                            <label class="sr-only" for="client-name-{{ client.id }}">Nome do cliente</label>
+                            <input id="client-name-{{ client.id }}" type="text" name="name" value="{{ client.name }}" required minlength="2">
+                            <button type="submit" class="icon-action save-action" aria-label="Salvar alterações" title="Salvar alterações">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 9.2 17 19 7"/></svg>
+                            </button>
+                        </form>
+                        <form method="post" action="/clientes/{{ client.id }}/excluir" class="delete-client-form" onsubmit="return confirm('Excluir este cliente e todos os monitoramentos, termos e resultados?')">
+                            <button class="icon-action danger-action" type="submit" aria-label="Excluir cliente" title="Excluir cliente">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v5m4-5v5"/></svg>
+                            </button>
+                        </form>
+                    </div>
+                </details>
+                {% endfor %}
+            </div>
+            {% else %}<div class="empty-compact">Nenhum cliente cadastrado.</div>{% endif %}
+        </section>
+
+        <details class="app-card" style="margin-top:32px">
+            <summary><strong>Novo cliente</strong></summary>
+            <form method="post" action="/clientes" class="stack-form" style="margin-top:20px">
+                <label for="name">Nome</label>
+                <input id="name" type="text" name="name" placeholder="Ex.: Cliente principal" required minlength="2">
+                <button type="submit" class="primary-button">Cadastrar</button>
+            </form>
+        </details>
     </main>
 </body>
 </html>
