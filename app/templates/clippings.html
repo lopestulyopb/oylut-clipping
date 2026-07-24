@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Clippings | Oylut Clipping</title><link rel="stylesheet" href="/static/css/app.css?v=0.9.0"><link rel="stylesheet" href="/static/css/management.css?v=0.9.0"><link rel="stylesheet" href="/static/css/drawer.css?v=0.9.0"><link rel="stylesheet" href="/static/css/clippings.css?v=0.9.0"></head>
+<body class="app-body">
+{% include "_drawer.html" %}
+<header class="app-header"><a href="/" class="icon-button" aria-label="Voltar">←</a><div class="brand-lockup"><span>OYLUT</span><strong>Clipping</strong></div></header>
+<main class="app-main drawer-page">
+<section class="screen-heading"><div><span class="screen-kicker">ARQUIVO</span><h1>Clippings</h1></div><span class="count-pill">{{ clippings|length }}</span></section>
+{% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+{% if clippings %}<div class="client-list">{% for clipping in clippings %}<article class="history-row clipping-history-row"><a href="/clippings/{{ clipping.id }}" class="clipping-history-link"><span class="history-main"><strong>{{ clipping.title }}</strong><small>{{ clipping.client_name or 'Sem cliente' }}{% if clipping.monitoring_name %} · {{ clipping.monitoring_name }}{% endif %}</small></span><span class="history-meta"><strong>{{ clipping.item_count }} publicações</strong><small>{{ clipping.created_at[:16]|replace('T', ' · ') }}</small></span></a><form method="post" action="/clippings/{{ clipping.id }}/excluir" onsubmit="return confirm('Excluir este clipping?')"><button class="icon-action danger-action" type="submit" aria-label="Excluir clipping"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg></button></form></article>{% endfor %}</div>{% else %}<div class="empty-compact">Nenhum clipping criado.</div>{% endif %}
+</main></body></html>
