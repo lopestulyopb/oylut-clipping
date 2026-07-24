@@ -23,7 +23,7 @@
 
     {% if monitoring %}
     <section class="app-card">
-        <h2>Pesquisar agora</h2>
+        <h2>Pesquisar</h2>
         <form method="post" action="/monitoramentos/{{ monitoring.id }}/pesquisar" class="stack-form">
             <label for="period_hours">Período</label>
             <select id="period_hours" name="period_hours">
@@ -32,7 +32,7 @@
                 <option value="72">Últimas 72 horas</option>
                 <option value="168">Últimos 7 dias</option>
             </select>
-            <button type="submit" class="primary-button">Pesquisar agora</button>
+            <button type="submit" class="primary-button">Pesquisar</button>
         </form>
     </section>
 
@@ -56,8 +56,8 @@
                         <input type="hidden" name="is_active" value="{{ 'false' if term.is_active else 'true' }}">
                         <button type="submit" class="text-button">{{ 'Desativar' if term.is_active else 'Ativar' }}</button>
                     </form>
-                    <form method="post" action="/monitoramentos/{{ monitoring.id }}/termos/{{ term.id }}/excluir">
-                        <button type="submit" class="text-button">Excluir</button>
+                    <form method="post" action="/monitoramentos/{{ monitoring.id }}/termos/{{ term.id }}/excluir" onsubmit="return confirm('Excluir este termo?')">
+                        <button type="submit" class="text-button danger-button">Excluir termo</button>
                     </form>
                 </div>
             </details>
