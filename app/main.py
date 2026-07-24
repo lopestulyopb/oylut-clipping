@@ -7,9 +7,10 @@ from fastapi.templating import Jinja2Templates
 
 from app.config import get_settings
 from app.routes.clients import router as clients_router
+from app.routes.history import router as history_router
+from app.routes.info import router as info_router
 from app.routes.monitoring_detail import router as monitoring_detail_router
 from app.routes.monitorings import router as monitorings_router
-from app.routes.history import router as history_router
 from app.routes.new_monitoring import router as new_monitoring_router
 from app.routes.search import router as search_router
 
@@ -19,7 +20,7 @@ settings = get_settings()
 app = FastAPI(
     title=settings.app_name,
     debug=settings.app_debug,
-    version="0.6.0",
+    version="0.6.2",
 )
 
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
@@ -30,6 +31,7 @@ app.include_router(monitorings_router)
 app.include_router(monitoring_detail_router)
 app.include_router(history_router)
 app.include_router(new_monitoring_router)
+app.include_router(info_router)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -37,9 +39,7 @@ async def home(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={
-            "app_name": settings.app_name,
-        },
+        context={"app_name": settings.app_name},
     )
 
 
@@ -48,6 +48,6 @@ async def health() -> dict[str, str | bool]:
     return {
         "status": "ok",
         "produto": settings.app_name,
-        "versao": "0.6.0",
+        "versao": "0.6.2",
         "banco_configurado": settings.database_configured,
     }
