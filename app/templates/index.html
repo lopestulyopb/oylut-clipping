@@ -17,23 +17,31 @@
         <section class="search-card" aria-labelledby="search-title">
             <div>
                 <h2 id="search-title">Novo monitoramento</h2>
-                <p>Cadastre o termo principal e as formas pelas quais ele pode aparecer.</p>
+                <p>Informe o termo principal e, em linhas separadas, as formas pelas quais ele pode aparecer.</p>
             </div>
 
-            <form>
-                <label for="term">Termo principal</label>
-                <input id="term" name="term" type="text" placeholder="Ex.: TCE-PB" disabled>
+            <form method="post" action="/pesquisar">
+                {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+
+                <label for="main_term">Termo principal</label>
+                <input id="main_term" name="main_term" type="text" maxlength="150" required
+                       placeholder="Ex.: TCE-PB" value="{{ form.main_term if form else '' }}">
 
                 <label for="variations">Variações</label>
-                <textarea id="variations" name="variations" rows="4" placeholder="Ex.: Tribunal de Contas da Paraíba" disabled></textarea>
+                <textarea id="variations" name="variations" rows="4"
+                          placeholder="Tribunal de Contas da Paraíba&#10;Tribunal de Contas do Estado da Paraíba">{{ form.variations if form else '' }}</textarea>
 
-                <label for="period">Período</label>
-                <select id="period" name="period" disabled>
-                    <option>Últimas 24 horas</option>
+                <label for="period_hours">Período</label>
+                <select id="period_hours" name="period_hours">
+                    {% set selected_period = form.period_hours if form else 24 %}
+                    <option value="24" {% if selected_period == 24 %}selected{% endif %}>Últimas 24 horas</option>
+                    <option value="48" {% if selected_period == 48 %}selected{% endif %}>Últimas 48 horas</option>
+                    <option value="72" {% if selected_period == 72 %}selected{% endif %}>Últimas 72 horas</option>
+                    <option value="168" {% if selected_period == 168 %}selected{% endif %}>Últimos 7 dias</option>
                 </select>
 
-                <button type="button" disabled>Pesquisar menções</button>
-                <small>A busca será ativada na Sprint 2, após a integração dos primeiros coletores.</small>
+                <button type="submit">Pesquisar menções</button>
+                <small>Nesta versão, a pesquisa consulta notícias indexadas no Google News.</small>
             </form>
         </section>
 
