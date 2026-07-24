@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <title>Automação | Oylut Clipping</title>
-    <link rel="stylesheet" href="/static/css/app.css?v=1.0.3">
-    <link rel="stylesheet" href="/static/css/management.css?v=1.0.3">
-    <link rel="stylesheet" href="/static/css/drawer.css?v=1.0.3">
-    <link rel="stylesheet" href="/static/css/schedules.css?v=1.0.3">
+    <link rel="stylesheet" href="/static/css/app.css?v=1.0.4">
+    <link rel="stylesheet" href="/static/css/management.css?v=1.0.4">
+    <link rel="stylesheet" href="/static/css/drawer.css?v=1.0.4">
+    <link rel="stylesheet" href="/static/css/schedules.css?v=1.0.4">
 </head>
 <body class="app-body automation-page">
 {% include "_drawer.html" %}
@@ -19,13 +19,13 @@
         <div>
             <span class="screen-kicker">AUTOMAÇÃO</span>
             <h1>Automação</h1>
-            <p>Configure clippings automáticos para seus monitoramentos.</p>
+            <p>Defina a data e o horário em que o clipping deve ser gerado.</p>
         </div>
         <span class="count-pill">{{ schedules|length }}</span>
     </section>
 
     {% if setup_pending %}
-    <div class="empty-compact">Execute a migração da Sprint 9 no Supabase para ativar o clipping automático.</div>
+    <div class="empty-compact">A automação ainda não está disponível.</div>
     {% endif %}
 
     <details class="app-card automation-card" open>
@@ -44,31 +44,24 @@
                 <label>
                     Data de início
                     <input type="date" name="start_date" required>
-                    <small class="field-help field-help-placeholder" aria-hidden="true">Espaço reservado</small>
+                    <small class="field-help">Primeiro dia em que a automação poderá executar.</small>
                 </label>
                 <label>
                     Data de término
                     <input type="date" name="end_date">
-                    <small class="field-help">Opcional. Sem data final, o clipping continua ativo.</small>
+                    <small class="field-help">Opcional. Sem data final, continuará ativa.</small>
                 </label>
             </div>
 
-            <div class="schedule-grid">
-                <label>
-                    Hora de início
-                    <input type="time" name="start_time" required>
-                    <small class="field-help field-help-placeholder" aria-hidden="true">Espaço reservado</small>
-                </label>
-                <label>
-                    Hora de término
-                    <input type="time" name="end_time" required>
-                    <small class="field-help">O clipping será gerado neste horário.</small>
-                </label>
-            </div>
+            <label class="delivery-time-field">
+                Receber clipping às
+                <input type="time" name="delivery_time" required>
+                <small>Todos os dias, o clipping será gerado neste horário.</small>
+            </label>
 
             <div class="schedule-explanation">
                 <strong>Como funciona</strong>
-                <p>Todos os dias, o sistema busca as publicações encontradas entre a hora de início e a hora de término. Depois, cria um clipping e salva no histórico.</p>
+                <p>O sistema pesquisa as novas publicações encontradas desde o último clipping, gera o documento e salva tudo no histórico.</p>
             </div>
 
             <button class="primary-button" type="submit" {% if setup_pending or not monitorings %}disabled{% endif %}>Criar clipping automático</button>
@@ -84,7 +77,7 @@
                 <div>
                     <strong>{{ schedule.monitorings.name if schedule.monitorings else 'Monitoramento removido' }}</strong>
                     <small>{{ schedule.monitorings.clients.name if schedule.monitorings and schedule.monitorings.clients else '' }}</small>
-                    <p>Todos os dias · das {{ (schedule.window_start_time or '00:00')[:5] }} às {{ schedule.run_time[:5] }}</p>
+                    <p>Todos os dias · receber às {{ schedule.run_time[:5] }}</p>
                     <small>Período: {{ schedule.start_date }}{% if schedule.end_date %} até {{ schedule.end_date }}{% else %} · sem data final{% endif %}</small>
                     <small>Próximo clipping: {{ schedule.next_run_at[:16]|replace('T',' · ') if schedule.next_run_at else 'a calcular' }}</small>
                 </div>
