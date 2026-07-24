@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import httpx
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -13,6 +14,7 @@ from app.routes.monitoring_detail import router as monitoring_detail_router
 from app.routes.monitorings import router as monitorings_router
 from app.routes.new_monitoring import router as new_monitoring_router
 from app.routes.search import router as search_router
+from app.services.client_service import client_service
 
 BASE_DIR = Path(__file__).resolve().parent
 settings = get_settings()
@@ -20,7 +22,7 @@ settings = get_settings()
 app = FastAPI(
     title=settings.app_name,
     debug=settings.app_debug,
-    version="0.6.2",
+    version="0.7.0",
 )
 
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
@@ -36,10 +38,17 @@ app.include_router(info_router)
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request) -> HTMLResponse:
+    error = request.query_params.get("erro")
+    try:
+        clients = await client_service.list_clients()
+    except (httpx.HTTPError, RuntimeError) as exc:
+        clients = []
+        error = f"Não foi possível acessar os clientes: {exc}"
+
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={"app_name": settings.app_name},
+        context={"app_name": settings.app_name, "clients": clients, "error": error},
     )
 
 
@@ -48,6 +57,6 @@ async def health() -> dict[str, str | bool]:
     return {
         "status": "ok",
         "produto": settings.app_name,
-        "versao": "0.6.2",
+        "versao": "0.7.0",
         "banco_configurado": settings.database_configured,
     }
