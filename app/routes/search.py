@@ -1,11 +1,13 @@
 from pathlib import Path
 
+import httpx
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError
 
 from app.schemas.search import SearchRequest
+from app.services.client_service import client_service
 from app.services.search_service import search_mentions
 from app.services.term_service import prepare_terms
 
@@ -30,12 +32,18 @@ async def search(
             period_hours=period_hours,
         )
     except ValidationError:
+        try:
+            clients = await client_service.list_clients()
+        except (httpx.HTTPError, RuntimeError):
+            clients = []
+
         return templates.TemplateResponse(
             request=request,
             name="index.html",
             status_code=422,
             context={
                 "app_name": "Oylut Clipping",
+                "clients": clients,
                 "error": "Preencha um termo com pelo menos dois caracteres.",
                 "form": {
                     "main_term": main_term,
