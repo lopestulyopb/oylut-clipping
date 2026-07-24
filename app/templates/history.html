@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Histórico | Oylut Clipping</title>
-    <link rel="stylesheet" href="/static/css/app.css?v=0.8.0"><link rel="stylesheet" href="/static/css/management.css?v=0.8.0"><link rel="stylesheet" href="/static/css/drawer.css?v=0.8.0">
+    <link rel="stylesheet" href="/static/css/app.css?v=0.8.1"><link rel="stylesheet" href="/static/css/management.css?v=0.8.1"><link rel="stylesheet" href="/static/css/drawer.css?v=0.8.1">
 </head>
 <body class="app-body">
 {% include "_drawer.html" %}
@@ -12,6 +12,11 @@
     <section class="screen-heading"><div><span class="screen-kicker">PESQUISAS</span><h1>Histórico</h1></div><span class="count-pill" id="history-count">{{ searches|length }}</span></section>
     {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
 
+    <div class="history-toolbar">
+        <button id="clear-quick-history" class="text-button" type="button" hidden>Limpar pesquisas rápidas</button>
+        {% if searches %}<form method="post" action="/historico/limpar" onsubmit="return confirm('Excluir todo o histórico de monitoramentos e seus resultados?')"><button class="text-button danger-button" type="submit">Limpar histórico</button></form>{% endif %}
+    </div>
+
     <section id="quick-history-section" class="list-section" hidden>
         <h2>Pesquisas rápidas</h2>
         <div id="quick-history-list" class="client-list"></div>
@@ -19,45 +24,52 @@
 
     <section class="list-section">
         <h2>Monitoramentos</h2>
-        {% if searches %}<div class="client-list">{% for search in searches %}<a class="history-row" href="/historico/{{ search.id }}"><span class="history-main"><strong>{{ search.monitorings.name if search.monitorings else 'Monitoramento removido' }}</strong><small>{{ search.monitorings.clients.name if search.monitorings and search.monitorings.clients else 'Cliente não identificado' }} · {{ search.period_hours }}h</small></span><span class="history-meta"><strong>{{ search.result_count }} resultados</strong><small>{{ search.started_at[:16]|replace('T', ' · ') }}</small></span></a>{% endfor %}</div>{% else %}<div class="empty-compact">Nenhuma pesquisa de monitoramento realizada.</div>{% endif %}
+        {% if searches %}<div class="client-list">{% for search in searches %}<div class="history-row history-row-actions"><a class="history-row-link" href="/historico/{{ search.id }}"><span class="history-main"><strong>{{ search.monitorings.name if search.monitorings else 'Monitoramento removido' }}</strong><small>{{ search.monitorings.clients.name if search.monitorings and search.monitorings.clients else 'Cliente não identificado' }} · {{ search.period_hours }}h</small></span><span class="history-meta"><strong>{{ search.result_count }} resultados</strong><small>{{ search.started_at[:16]|replace('T', ' · ') }}</small></span></a><form method="post" action="/historico/{{ search.id }}/excluir" onsubmit="return confirm('Excluir esta pesquisa e seus resultados?')"><button class="icon-action danger-action" type="submit" aria-label="Excluir pesquisa" title="Excluir pesquisa"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg></button></form></div>{% endfor %}</div>{% else %}<div class="empty-compact">Nenhuma pesquisa de monitoramento realizada.</div>{% endif %}
     </section>
 </main>
 <script>
 (() => {
-    const history = JSON.parse(localStorage.getItem('oylutQuickSearchHistory') || '[]');
-    if (!history.length) return;
+    let history = JSON.parse(localStorage.getItem('oylutQuickSearchHistory') || '[]');
     const section = document.getElementById('quick-history-section');
     const list = document.getElementById('quick-history-list');
     const count = document.getElementById('history-count');
-    section.hidden = false;
-    count.textContent = Number(count.textContent || 0) + history.length;
+    const clearButton = document.getElementById('clear-quick-history');
 
-    history.forEach((item) => {
-        const row = document.createElement('div');
-        row.className = 'history-row';
-        const date = new Date(item.timestamp).toLocaleString('pt-BR', {dateStyle: 'short', timeStyle: 'short'});
-        row.innerHTML = `<span class="history-main"><strong></strong><small></small></span><span class="history-meta"><strong>${item.resultCount} resultados</strong><small>${date}</small></span>`;
-        row.querySelector('.history-main strong').textContent = item.mainTerm;
-        row.querySelector('.history-main small').textContent = item.periodLabel;
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'text-button';
-        button.textContent = 'Reabrir';
-        button.addEventListener('click', () => {
-            const form = document.createElement('form');
-            form.method = 'post';
-            form.action = '/pesquisar';
-            const fields = {main_term: item.mainTerm, variations: (item.variations || []).join('\n'), period_hours: item.periodHours};
-            Object.entries(fields).forEach(([name, value]) => {
-                const input = document.createElement('input');
-                input.type = 'hidden'; input.name = name; input.value = value; form.appendChild(input);
+    function render() {
+        list.innerHTML = '';
+        section.hidden = history.length === 0;
+        clearButton.hidden = history.length === 0;
+        count.textContent = {{ searches|length }} + history.length;
+        history.forEach((item, index) => {
+            const row = document.createElement('div');
+            row.className = 'history-row history-row-actions';
+            const content = document.createElement('div');
+            content.className = 'history-row-link';
+            const date = new Date(item.timestamp).toLocaleString('pt-BR', {dateStyle: 'short', timeStyle: 'short'});
+            content.innerHTML = `<span class="history-main"><strong></strong><small></small></span><span class="history-meta"><strong>${item.resultCount} resultados</strong><small>${date}</small></span>`;
+            content.querySelector('.history-main strong').textContent = item.mainTerm;
+            content.querySelector('.history-main small').textContent = item.periodLabel;
+
+            const actions = document.createElement('div');
+            actions.className = 'quick-history-actions';
+            const reopen = document.createElement('button');
+            reopen.type = 'button'; reopen.className = 'text-button'; reopen.textContent = 'Reabrir';
+            reopen.addEventListener('click', () => {
+                const form = document.createElement('form'); form.method = 'post'; form.action = '/pesquisar';
+                const fields = {main_term: item.mainTerm, variations: (item.variations || []).join('\n'), period_hours: item.periodHours};
+                Object.entries(fields).forEach(([name, value]) => { const input = document.createElement('input'); input.type = 'hidden'; input.name = name; input.value = value; form.appendChild(input); });
+                document.body.appendChild(form); form.submit();
             });
-            document.body.appendChild(form);
-            form.submit();
+            const remove = document.createElement('button');
+            remove.type = 'button'; remove.className = 'icon-action danger-action'; remove.setAttribute('aria-label', 'Excluir pesquisa'); remove.title = 'Excluir pesquisa';
+            remove.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg>';
+            remove.addEventListener('click', () => { if (!confirm('Excluir esta pesquisa rápida?')) return; history.splice(index, 1); localStorage.setItem('oylutQuickSearchHistory', JSON.stringify(history)); render(); });
+            actions.append(reopen, remove); row.append(content, actions); list.appendChild(row);
         });
-        row.appendChild(button);
-        list.appendChild(row);
-    });
+    }
+
+    clearButton.addEventListener('click', () => { if (!confirm('Limpar todas as pesquisas rápidas?')) return; history = []; localStorage.removeItem('oylutQuickSearchHistory'); render(); });
+    render();
 })();
 </script>
 </body>
