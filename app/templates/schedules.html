@@ -1,1 +1,110 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Agendamentos | Oylut Clipping</title><link rel="stylesheet" href="/static/css/app.css?v=1.0.0"><link rel="stylesheet" href="/static/css/management.css?v=1.0.0"><link rel="stylesheet" href="/static/css/drawer.css?v=1.0.0"><link rel="stylesheet" href="/static/css/schedules.css?v=1.0.0"></head><body class="app-body">{% include "_drawer.html" %}<header class="app-header"><a href="/" class="icon-button" aria-label="Voltar">←</a><div class="brand-lockup"><span>OYLUT</span><strong>Clipping</strong></div></header><main class="app-main drawer-page"><section class="screen-heading"><div><span class="screen-kicker">AUTOMAÇÃO</span><h1>Agendamentos</h1><p>Programe pesquisas recorrentes dos monitoramentos.</p></div><span class="count-pill">{{ schedules|length }}</span></section>{% if setup_pending %}<div class="empty-compact">Execute a migração das Sprints 7 e 8 no Supabase para ativar os agendamentos.</div>{% endif %}<details class="app-card" open><summary><strong>Novo agendamento</strong></summary><form method="post" action="/agendamentos" class="stack-form schedule-form"><label>Monitoramento<select name="monitoring_id" required>{% for monitoring in monitorings %}<option value="{{ monitoring.id }}">{{ monitoring.clients.name if monitoring.clients else 'Cliente' }} · {{ monitoring.name }}</option>{% endfor %}</select></label><label>Frequência<select name="frequency" id="frequency"><option value="daily">Diária</option><option value="weekly">Semanal</option></select></label><label id="weekday-field" hidden>Dia da semana<select name="weekday"><option value="0">Segunda-feira</option><option value="1">Terça-feira</option><option value="2">Quarta-feira</option><option value="3">Quinta-feira</option><option value="4">Sexta-feira</option><option value="5">Sábado</option><option value="6">Domingo</option></select></label><label>Horário<input type="time" name="run_time" required></label><label>Início<input type="date" name="start_date" required></label><label>Fim opcional<input type="date" name="end_date"></label><label>Período pesquisado<select name="period_hours"><option value="24">Últimas 24 horas</option><option value="48">Últimas 48 horas</option><option value="168">Últimos 7 dias</option><option value="720">Últimos 30 dias</option></select></label><button class="primary-button" type="submit" {% if setup_pending or not monitorings %}disabled{% endif %}>Criar agendamento</button></form></details><section class="list-section"><h2>Programações</h2>{% if schedules %}<div class="client-list">{% for schedule in schedules %}<article class="schedule-card"><div><strong>{{ schedule.monitorings.name if schedule.monitorings else 'Monitoramento removido' }}</strong><small>{{ schedule.monitorings.clients.name if schedule.monitorings and schedule.monitorings.clients else '' }}</small><p>{{ 'Todos os dias' if schedule.frequency == 'daily' else 'Semanal' }} · {{ schedule.run_time[:5] }} · período de {{ schedule.period_hours }}h</p><small>Próxima execução: {{ schedule.next_run_at[:16]|replace('T',' · ') if schedule.next_run_at else 'a calcular' }}</small></div><div class="schedule-actions"><form method="post" action="/agendamentos/{{ schedule.id }}/status"><input type="hidden" name="is_active" value="{{ 'false' if schedule.is_active else 'true' }}"><button class="status-switch {{ 'is-active' if schedule.is_active else '' }}" role="switch" aria-checked="{{ 'true' if schedule.is_active else 'false' }}" aria-label="{{ 'Desativar' if schedule.is_active else 'Ativar' }} agendamento"></button></form><form method="post" action="/agendamentos/{{ schedule.id }}/excluir" onsubmit="return confirm('Excluir este agendamento?')"><button class="icon-action neutral-delete-action" type="submit" aria-label="Excluir"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg></button></form></div></article>{% endfor %}</div>{% else %}<div class="empty-compact">Nenhum agendamento criado.</div>{% endif %}</section></main><script>const frequency=document.getElementById('frequency'),weekday=document.getElementById('weekday-field');frequency?.addEventListener('change',()=>weekday.hidden=frequency.value!=='weekly');</script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title>Clipping automático | Oylut Clipping</title>
+    <link rel="stylesheet" href="/static/css/app.css?v=1.0.1">
+    <link rel="stylesheet" href="/static/css/management.css?v=1.0.1">
+    <link rel="stylesheet" href="/static/css/drawer.css?v=1.0.1">
+    <link rel="stylesheet" href="/static/css/schedules.css?v=1.0.1">
+</head>
+<body class="app-body">
+{% include "_drawer.html" %}
+<header class="app-header">
+    <a href="/" class="icon-button" aria-label="Voltar">←</a>
+    <div class="brand-lockup"><span>OYLUT</span><strong>Clipping</strong></div>
+</header>
+<main class="app-main drawer-page">
+    <section class="screen-heading">
+        <div>
+            <span class="screen-kicker">AUTOMAÇÃO</span>
+            <h1>Clipping automático</h1>
+            <p>Defina quando a coleta começa e termina. Ao final, o sistema gera e salva o clipping.</p>
+        </div>
+        <span class="count-pill">{{ schedules|length }}</span>
+    </section>
+
+    {% if setup_pending %}
+    <div class="empty-compact">Execute a migração da Sprint 9 no Supabase para ativar o clipping automático.</div>
+    {% endif %}
+
+    <details class="app-card" open>
+        <summary><strong>Novo clipping automático</strong></summary>
+        <form method="post" action="/agendamentos" class="stack-form schedule-form">
+            <label>
+                Monitoramento
+                <select name="monitoring_id" required>
+                    {% for monitoring in monitorings %}
+                    <option value="{{ monitoring.id }}">{{ monitoring.clients.name if monitoring.clients else 'Cliente' }} · {{ monitoring.name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <div class="schedule-grid">
+                <label>
+                    Data de início
+                    <input type="date" name="start_date" required>
+                </label>
+                <label>
+                    Data de término
+                    <input type="date" name="end_date">
+                    <small>Opcional. Sem data final, o clipping continua ativo.</small>
+                </label>
+            </div>
+
+            <div class="schedule-grid">
+                <label>
+                    Hora de início
+                    <input type="time" name="start_time" required>
+                </label>
+                <label>
+                    Hora de término
+                    <input type="time" name="end_time" required>
+                    <small>O clipping será gerado neste horário.</small>
+                </label>
+            </div>
+
+            <div class="schedule-explanation">
+                <strong>Como funciona</strong>
+                <p>Todos os dias, o sistema busca as publicações encontradas entre a hora de início e a hora de término. Depois, cria um clipping e salva no histórico.</p>
+            </div>
+
+            <button class="primary-button" type="submit" {% if setup_pending or not monitorings %}disabled{% endif %}>Criar clipping automático</button>
+        </form>
+    </details>
+
+    <section class="list-section">
+        <h2>Clippings programados</h2>
+        {% if schedules %}
+        <div class="client-list">
+            {% for schedule in schedules %}
+            <article class="schedule-card">
+                <div>
+                    <strong>{{ schedule.monitorings.name if schedule.monitorings else 'Monitoramento removido' }}</strong>
+                    <small>{{ schedule.monitorings.clients.name if schedule.monitorings and schedule.monitorings.clients else '' }}</small>
+                    <p>Todos os dias · das {{ (schedule.window_start_time or '00:00')[:5] }} às {{ schedule.run_time[:5] }}</p>
+                    <small>Período: {{ schedule.start_date }}{% if schedule.end_date %} até {{ schedule.end_date }}{% else %} · sem data final{% endif %}</small>
+                    <small>Próximo clipping: {{ schedule.next_run_at[:16]|replace('T',' · ') if schedule.next_run_at else 'a calcular' }}</small>
+                </div>
+                <div class="schedule-actions">
+                    <form method="post" action="/agendamentos/{{ schedule.id }}/status">
+                        <input type="hidden" name="is_active" value="{{ 'false' if schedule.is_active else 'true' }}">
+                        <button class="status-switch {{ 'is-active' if schedule.is_active else '' }}" role="switch" aria-checked="{{ 'true' if schedule.is_active else 'false' }}" aria-label="{{ 'Desativar' if schedule.is_active else 'Ativar' }} clipping automático"></button>
+                    </form>
+                    <form method="post" action="/agendamentos/{{ schedule.id }}/excluir" onsubmit="return confirm('Excluir este clipping automático?')">
+                        <button class="icon-action neutral-delete-action" type="submit" aria-label="Excluir">
+                            <svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg>
+                        </button>
+                    </form>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-compact">Nenhum clipping automático criado.</div>
+        {% endif %}
+    </section>
+</main>
+</body>
+</html>
