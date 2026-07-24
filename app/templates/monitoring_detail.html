@@ -4,8 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Termos | Oylut Clipping</title>
-    <link rel="stylesheet" href="/static/css/app.css">
-    <link rel="stylesheet" href="/static/css/management.css">
+    <link rel="stylesheet" href="/static/css/app.css?v=0.7.4">
+    <link rel="stylesheet" href="/static/css/management.css?v=0.7.4">
+    <link rel="stylesheet" href="/static/css/sprint3.css?v=0.7.4">
 </head>
 <body class="app-body">
 <header class="app-header">
@@ -24,15 +25,16 @@
     {% if monitoring %}
     <section class="app-card">
         <h2>Pesquisar</h2>
-        <form method="post" action="/monitoramentos/{{ monitoring.id }}/pesquisar" class="stack-form">
+        <form method="post" action="/monitoramentos/{{ monitoring.id }}/pesquisar" class="stack-form search-submit-form">
             <label for="period_hours">Período</label>
             <select id="period_hours" name="period_hours">
                 <option value="24">Últimas 24 horas</option>
                 <option value="48">Últimas 48 horas</option>
                 <option value="72">Últimas 72 horas</option>
                 <option value="168">Últimos 7 dias</option>
+                <option value="720">Últimos 30 dias</option>
             </select>
-            <button type="submit" class="primary-button">Pesquisar</button>
+            <button type="submit" class="primary-button" data-loading-text="Pesquisando...">Pesquisar</button>
         </form>
     </section>
 
@@ -77,5 +79,49 @@
     </details>
     {% endif %}
 </main>
+
+<div class="search-loading" id="search-loading" role="status" aria-live="polite" aria-hidden="true">
+    <div class="search-loading-panel">
+        <div class="search-loading-spinner" aria-hidden="true"></div>
+        <h2>Preparando seu monitoramento</h2>
+        <p>A busca pode levar alguns instantes.</p>
+        <ol class="search-loading-steps">
+            <li class="search-loading-step is-active">Consultando fontes</li>
+            <li class="search-loading-step">Encontrando publicações</li>
+            <li class="search-loading-step">Organizando resultados</li>
+            <li class="search-loading-step">Finalizando pesquisa</li>
+        </ol>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.search-submit-form').forEach((form) => {
+        form.addEventListener('submit', () => {
+            const button = form.querySelector('button[type="submit"]');
+            const loading = document.getElementById('search-loading');
+            const steps = loading ? Array.from(loading.querySelectorAll('.search-loading-step')) : [];
+
+            if (button) {
+                button.disabled = true;
+                button.textContent = button.dataset.loadingText || 'Pesquisando...';
+            }
+
+            if (loading) {
+                loading.classList.add('is-visible');
+                loading.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+            }
+
+            steps.forEach((step, index) => {
+                window.setTimeout(() => {
+                    steps.forEach((item, itemIndex) => {
+                        item.classList.toggle('is-active', itemIndex === index);
+                        item.classList.toggle('is-complete', itemIndex < index);
+                    });
+                }, index * 1400);
+            });
+        });
+    });
+</script>
 </body>
 </html>
