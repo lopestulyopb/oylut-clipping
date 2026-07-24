@@ -11,40 +11,24 @@
     <main class="page-shell compact-shell">
         <header class="simple-brand home-header">
             <h1>Oylut Clipping</h1>
-            <details class="home-menu">
-                <summary aria-label="Abrir menu">☰</summary>
-                <nav aria-label="Menu principal">
-                    <a href="/">Pesquisa</a>
-                    <a href="/clientes">Clientes</a>
-                </nav>
-            </details>
         </header>
 
-        <section class="search-card compact-card" aria-labelledby="search-title">
-            <form method="post" action="/pesquisar">
-                <h2 id="search-title">Novo monitoramento</h2>
-
-                {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
-
-                <label for="main_term">Termo principal</label>
-                <input id="main_term" name="main_term" type="text" maxlength="150" required
-                       placeholder="Ex.: nome principal" value="{{ form.main_term if form else '' }}">
-
-                <label for="variations">Termos secundários</label>
-                <textarea id="variations" name="variations" rows="3"
-                          placeholder="Ex.: variação do nome&#10;Ex.: outra forma de busca">{{ form.variations if form else '' }}</textarea>
-
-                <label for="period_hours">Período</label>
-                <select id="period_hours" name="period_hours">
-                    {% set selected_period = form.period_hours if form else 24 %}
-                    <option value="24" {% if selected_period == 24 %}selected{% endif %}>Últimas 24 horas</option>
-                    <option value="48" {% if selected_period == 48 %}selected{% endif %}>Últimas 48 horas</option>
-                    <option value="72" {% if selected_period == 72 %}selected{% endif %}>Últimas 72 horas</option>
-                    <option value="168" {% if selected_period == 168 %}selected{% endif %}>Últimos 7 dias</option>
-                </select>
-
-                <button type="submit">Pesquisar</button>
-            </form>
+        <section class="dashboard-grid" aria-label="Menu principal">
+            <a class="dashboard-action dashboard-primary" href="/novo-monitoramento">
+                <span class="dashboard-icon">＋</span>
+                <strong>Novo monitoramento</strong>
+                <small>Cadastre cliente, monitoramento e termos.</small>
+            </a>
+            <a class="dashboard-action" href="/clientes">
+                <span class="dashboard-icon">C</span>
+                <strong>Clientes</strong>
+                <small>Acesse clientes e monitoramentos.</small>
+            </a>
+            <a class="dashboard-action" href="/historico">
+                <span class="dashboard-icon">H</span>
+                <strong>Histórico</strong>
+                <small>Reabra pesquisas já realizadas.</small>
+            </a>
         </section>
     </main>
 </body>
