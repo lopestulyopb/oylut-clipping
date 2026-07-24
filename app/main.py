@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app.config import get_settings
+from app.routes.clients import router as clients_router
 from app.routes.search import router as search_router
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -14,12 +15,13 @@ settings = get_settings()
 app = FastAPI(
     title=settings.app_name,
     debug=settings.app_debug,
-    version="0.2.0",
+    version="0.3.0",
 )
 
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 app.include_router(search_router)
+app.include_router(clients_router)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -35,9 +37,10 @@ async def home(request: Request) -> HTMLResponse:
 
 
 @app.get("/saude")
-async def health() -> dict[str, str]:
+async def health() -> dict[str, str | bool]:
     return {
         "status": "ok",
         "produto": settings.app_name,
-        "versao": "0.2.0",
+        "versao": "0.3.0",
+        "banco_configurado": settings.database_configured,
     }
