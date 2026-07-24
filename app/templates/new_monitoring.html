@@ -2,41 +2,36 @@
 <html lang="pt-BR">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Novo monitoramento | Oylut Clipping</title>
-    <link rel="stylesheet" href="/static/css/app.css">
+    <link rel="stylesheet" href="/static/css/app.css?v=0.7.0">
+    <link rel="stylesheet" href="/static/css/drawer.css?v=0.7.0">
 </head>
 <body class="app-body">
+{% include "_drawer.html" %}
 <header class="app-header">
     <a href="/" class="icon-button" aria-label="Voltar">←</a>
     <div class="brand-lockup"><span>OYLUT</span><strong>Clipping</strong></div>
 </header>
-<main class="app-main">
-    <section class="screen-heading">
-        <div><span class="screen-kicker">CADASTRO</span><h1>Novo monitoramento</h1></div>
-    </section>
+<main class="app-main drawer-page">
+    <section class="screen-heading"><div><span class="screen-kicker">CADASTRO</span><h1>Novo monitoramento</h1></div></section>
     {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
     <section class="app-card">
         {% if clients %}
-        <form method="post" action="/novo-monitoramento" class="stack-form">
+        <form method="post" action="/novo-monitoramento" class="stack-form submit-lock-form">
             <label for="client_id">Cliente</label>
-            <select id="client_id" name="client_id" required>
-                <option value="">Selecione</option>
-                {% for client in clients if client.is_active %}<option value="{{ client.id }}">{{ client.name }}</option>{% endfor %}
-            </select>
+            <select id="client_id" name="client_id" required><option value="">Selecione</option>{% for client in clients if client.is_active %}<option value="{{ client.id }}">{{ client.name }}</option>{% endfor %}</select>
             <label for="name">Nome do monitoramento</label>
             <input id="name" name="name" type="text" required minlength="2" placeholder="Ex.: Institucional">
             <label for="main_term">Termo principal</label>
             <input id="main_term" name="main_term" type="text" required minlength="2" placeholder="Ex.: TCE-PB">
             <label for="secondary_terms">Termos secundários <span class="optional">um por linha</span></label>
             <textarea id="secondary_terms" name="secondary_terms" rows="5" placeholder="Tribunal de Contas da Paraíba&#10;Tribunal de Contas do Estado"></textarea>
-            <button type="submit" class="primary-button">Salvar</button>
+            <button type="submit" class="primary-button" data-loading-text="Criando monitoramento...">Salvar</button>
         </form>
-        {% else %}
-        <div class="empty-compact">Cadastre um cliente antes de criar um monitoramento.</div>
-        <a class="primary-action" href="/clientes">Cadastrar cliente</a>
-        {% endif %}
+        {% else %}<div class="empty-compact">Cadastre um cliente antes de criar um monitoramento.</div><a class="primary-action" href="/clientes">Cadastrar cliente</a>{% endif %}
     </section>
 </main>
+<script>document.querySelectorAll('.submit-lock-form').forEach(form=>form.addEventListener('submit',()=>{const b=form.querySelector('button[type="submit"]');if(b){b.disabled=true;b.textContent=b.dataset.loadingText||'Processando...';}}));</script>
 </body>
 </html>
