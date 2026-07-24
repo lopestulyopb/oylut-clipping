@@ -69,5 +69,8 @@ class ClientService:
         )
         return rows[0]
 
+    async def delete_client(self, client_id: str) -> None:
+        await self.database.request("DELETE", "clients", params={"id": f"eq.{client_id}"})
+
 
 client_service = ClientService()
