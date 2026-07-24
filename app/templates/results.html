@@ -10,13 +10,14 @@
 <body>
     <main class="page-shell compact-shell">
         <nav class="topbar compact-topbar">
-            <a class="back-link" href="/">← Nova pesquisa</a>
+            <a class="back-link" href="{{ '/historico' if from_history else ('/monitoramentos/' ~ monitoring.id if monitoring else '/') }}">← {{ 'Histórico' if from_history else ('Monitoramento' if monitoring else 'Início') }}</a>
             <span>Oylut Clipping</span>
         </nav>
 
         <header class="results-header compact-results-header">
             <span class="eyebrow">Últimas {{ period_hours }} horas</span>
             <h1>{{ total }} menções</h1>
+            {% if monitoring %}<p>{{ monitoring.name }}</p>{% endif %}
         </header>
 
         <div class="filter-row" aria-label="Filtros por tipo de mídia">
@@ -26,59 +27,39 @@
             <button class="filter-chip" type="button" data-filter="rede_social" disabled>Redes sociais</button>
         </div>
 
-        {% for error in errors %}
-            <div class="alert alert-error">{{ error }}</div>
-        {% endfor %}
+        {% for error in errors %}<div class="alert alert-error">{{ error }}</div>{% endfor %}
 
         {% if mentions %}
-            <section class="results-list" aria-label="Menções encontradas">
-                {% for mention in mentions %}
-                    <article class="mention-card compact-mention-card" data-media-type="{{ mention.media_type.value }}">
-                        <div class="mention-meta">
-                            <span class="media-badge">Notícia</span>
-                            <span>{{ mention.source }}</span>
-                        </div>
-
-                        <h2>{{ mention.title }}</h2>
-
-                        {% if mention.published_at %}
-                            <p class="published-at">Publicado em {{ mention.published_at.strftime('%d/%m/%Y às %H:%M') }}</p>
-                        {% endif %}
-
-                        {% if mention.excerpt and mention.excerpt|striptags|trim != mention.title|trim %}
-                            <p class="excerpt">{{ mention.excerpt | striptags }}</p>
-                        {% endif %}
-
-                        <div class="mention-footer">
-                            <span>Termo pesquisado: <strong>{{ mention.searched_term }}</strong></span>
-                            <a href="{{ mention.url }}" target="_blank" rel="noopener noreferrer">Abrir conteúdo ↗</a>
-                        </div>
-                    </article>
-                {% endfor %}
-            </section>
+        <section class="results-list" aria-label="Menções encontradas">
+            {% for mention in mentions %}
+            {% set media_type = mention.media_type.value if mention.media_type.value is defined else mention.media_type %}
+            <article class="mention-card compact-mention-card" data-media-type="{{ media_type }}">
+                <div class="mention-meta"><span class="media-badge">Notícia</span><span>{{ mention.source }}</span></div>
+                <h2>{{ mention.title }}</h2>
+                {% if mention.published_at %}
+                    {% if mention.published_at.strftime is defined %}<p class="published-at">Publicado em {{ mention.published_at.strftime('%d/%m/%Y às %H:%M') }}</p>
+                    {% else %}<p class="published-at">Publicado em {{ mention.published_at[:16]|replace('T', ' às ') }}</p>{% endif %}
+                {% endif %}
+                {% if mention.excerpt and mention.excerpt|striptags|trim != mention.title|trim %}<p class="excerpt">{{ mention.excerpt | striptags }}</p>{% endif %}
+                <div class="mention-footer">
+                    <span>Termo pesquisado: <strong>{{ mention.searched_term }}</strong></span>
+                    <a href="{{ mention.url }}" target="_blank" rel="noopener noreferrer">Abrir conteúdo ↗</a>
+                </div>
+            </article>
+            {% endfor %}
+        </section>
         {% else %}
-            <section class="empty-state">
-                <h2>Nenhuma menção encontrada</h2>
-                <a class="primary-link" href="/">Nova pesquisa</a>
-            </section>
+        <section class="empty-state"><h2>Nenhuma menção encontrada</h2><a class="primary-link" href="{{ '/historico' if from_history else '/' }}">Voltar</a></section>
         {% endif %}
     </main>
-
     <script>
         const chips = document.querySelectorAll('.filter-chip:not(:disabled)');
         const cards = document.querySelectorAll('.mention-card');
-
-        chips.forEach((chip) => {
-            chip.addEventListener('click', () => {
-                chips.forEach((item) => item.classList.remove('active'));
-                chip.classList.add('active');
-                const filter = chip.dataset.filter;
-
-                cards.forEach((card) => {
-                    card.hidden = filter !== 'all' && card.dataset.mediaType !== filter;
-                });
-            });
-        });
+        chips.forEach((chip) => chip.addEventListener('click', () => {
+            chips.forEach((item) => item.classList.remove('active'));
+            chip.classList.add('active');
+            cards.forEach((card) => { card.hidden = chip.dataset.filter !== 'all' && card.dataset.mediaType !== chip.dataset.filter; });
+        }));
     </script>
 </body>
 </html>
