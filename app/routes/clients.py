@@ -54,3 +54,9 @@ async def change_client_status(
 ) -> RedirectResponse:
     await client_service.set_client_active(client_id, is_active)
     return RedirectResponse(url="/clientes", status_code=303)
+
+
+@router.post("/{client_id}/excluir")
+async def delete_client(client_id: str) -> RedirectResponse:
+    await client_service.delete_client(client_id)
+    return RedirectResponse(url="/clientes", status_code=303)
