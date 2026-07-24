@@ -18,15 +18,24 @@ templates = Jinja2Templates(directory=BASE_DIR / "templates")
 router = APIRouter(prefix="/clippings", tags=["clippings"])
 
 
-def clipping_error_message(exc: Exception) -> str:
-    if isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code == 404:
-        return "O arquivo de clippings ainda está sendo preparado. Tente novamente após a configuração do banco de dados."
-    return "Não foi possível concluir esta ação. Tente novamente em instantes."
+async def clipping_storage_available() -> bool:
+    try:
+        await clipping_service.list_clippings()
+        return True
+    except (httpx.HTTPError, RuntimeError):
+        return False
 
 
 @router.get("/revisar", response_class=HTMLResponse)
 async def review_page(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse(request=request, name="clipping_review.html", context={"app_name": "Oylut Clipping"})
+    return templates.TemplateResponse(
+        request=request,
+        name="clipping_review.html",
+        context={
+            "app_name": "Oylut Clipping",
+            "setup_pending": not await clipping_storage_available(),
+        },
+    )
 
 
 @router.post("", response_class=HTMLResponse)
@@ -52,18 +61,20 @@ async def create_clipping(
             monitoring_name=monitoring_name or None,
         )
     except (ValueError, json.JSONDecodeError) as exc:
-        message = str(exc)
-    except (httpx.HTTPError, RuntimeError) as exc:
-        message = clipping_error_message(exc)
-    else:
-        return RedirectResponse(url=f"/clippings/{clipping['id']}", status_code=303)
-
-    return templates.TemplateResponse(
-        request=request,
-        name="clipping_review.html",
-        status_code=422,
-        context={"app_name": "Oylut Clipping", "error": message},
-    )
+        return templates.TemplateResponse(
+            request=request,
+            name="clipping_review.html",
+            status_code=422,
+            context={"app_name": "Oylut Clipping", "form_message": str(exc), "setup_pending": False},
+        )
+    except (httpx.HTTPError, RuntimeError):
+        return templates.TemplateResponse(
+            request=request,
+            name="clipping_review.html",
+            status_code=503,
+            context={"app_name": "Oylut Clipping", "setup_pending": True},
+        )
+    return RedirectResponse(url=f"/clippings/{clipping['id']}", status_code=303)
 
 
 @router.get("", response_class=HTMLResponse)
@@ -71,9 +82,6 @@ async def clipping_history(request: Request) -> HTMLResponse:
     setup_pending = False
     try:
         clippings = await clipping_service.list_clippings()
-    except httpx.HTTPStatusError as exc:
-        clippings = []
-        setup_pending = exc.response.status_code == 404
     except (httpx.HTTPError, RuntimeError):
         clippings = []
         setup_pending = True
