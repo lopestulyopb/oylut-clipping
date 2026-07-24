@@ -9,6 +9,8 @@ from app.config import get_settings
 from app.routes.clients import router as clients_router
 from app.routes.monitoring_detail import router as monitoring_detail_router
 from app.routes.monitorings import router as monitorings_router
+from app.routes.history import router as history_router
+from app.routes.new_monitoring import router as new_monitoring_router
 from app.routes.search import router as search_router
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -17,7 +19,7 @@ settings = get_settings()
 app = FastAPI(
     title=settings.app_name,
     debug=settings.app_debug,
-    version="0.5.0",
+    version="0.6.0",
 )
 
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
@@ -26,6 +28,8 @@ app.include_router(search_router)
 app.include_router(clients_router)
 app.include_router(monitorings_router)
 app.include_router(monitoring_detail_router)
+app.include_router(history_router)
+app.include_router(new_monitoring_router)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -35,7 +39,6 @@ async def home(request: Request) -> HTMLResponse:
         name="index.html",
         context={
             "app_name": settings.app_name,
-            "form": {"main_term": "", "variations": "", "period_hours": 24},
         },
     )
 
@@ -45,6 +48,6 @@ async def health() -> dict[str, str | bool]:
     return {
         "status": "ok",
         "produto": settings.app_name,
-        "versao": "0.5.0",
+        "versao": "0.6.0",
         "banco_configurado": settings.database_configured,
     }
