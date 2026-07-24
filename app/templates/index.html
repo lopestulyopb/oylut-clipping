@@ -7,29 +7,24 @@
     <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}">
 </head>
 <body>
-    <main class="page-shell">
-        <header class="hero">
-            <span class="eyebrow">Monitoramento para assessorias</span>
+    <main class="page-shell compact-shell">
+        <header class="simple-brand">
             <h1>Oylut Clipping</h1>
-            <p>Localize menções em notícias, redes sociais e vídeos sem eliminar publicações repetidas entre fontes.</p>
         </header>
 
-        <section class="search-card" aria-labelledby="search-title">
-            <div>
-                <h2 id="search-title">Novo monitoramento</h2>
-                <p>Informe o termo principal e, em linhas separadas, as formas pelas quais ele pode aparecer.</p>
-            </div>
-
+        <section class="search-card compact-card" aria-labelledby="search-title">
             <form method="post" action="/pesquisar">
+                <h2 id="search-title">Novo monitoramento</h2>
+
                 {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
 
                 <label for="main_term">Termo principal</label>
                 <input id="main_term" name="main_term" type="text" maxlength="150" required
-                       placeholder="Ex.: TCE-PB" value="{{ form.main_term if form else '' }}">
+                       placeholder="Ex.: nome principal" value="{{ form.main_term if form else '' }}">
 
-                <label for="variations">Variações</label>
-                <textarea id="variations" name="variations" rows="4"
-                          placeholder="Tribunal de Contas da Paraíba&#10;Tribunal de Contas do Estado da Paraíba">{{ form.variations if form else '' }}</textarea>
+                <label for="variations">Termos secundários</label>
+                <textarea id="variations" name="variations" rows="3"
+                          placeholder="Ex.: variação do nome&#10;Ex.: outra forma de busca">{{ form.variations if form else '' }}</textarea>
 
                 <label for="period_hours">Período</label>
                 <select id="period_hours" name="period_hours">
@@ -40,14 +35,8 @@
                     <option value="168" {% if selected_period == 168 %}selected{% endif %}>Últimos 7 dias</option>
                 </select>
 
-                <button type="submit">Pesquisar menções</button>
-                <small>Nesta versão, a pesquisa consulta notícias indexadas no Google News.</small>
+                <button type="submit">Pesquisar</button>
             </form>
-        </section>
-
-        <section class="principle">
-            <strong>Regra editorial:</strong>
-            cada publicação encontrada será preservada como uma menção individual.
         </section>
     </main>
 </body>
