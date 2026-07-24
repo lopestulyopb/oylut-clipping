@@ -144,6 +144,55 @@
     padding-top: 12px;
 }
 
+.dashboard-grid {
+    display: grid;
+    gap: 14px;
+    margin-top: 34px;
+}
+
+.dashboard-action {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    column-gap: 14px;
+    align-items: center;
+    padding: 22px;
+    color: #f4f6fb;
+    background: #161a20;
+    border: 1px solid #343b46;
+    border-radius: 20px;
+    text-decoration: none;
+}
+
+.dashboard-action strong {
+    font-size: 1.15rem;
+}
+
+.dashboard-action small {
+    grid-column: 2;
+    margin-top: 4px;
+    color: #8e96a3;
+}
+
+.dashboard-primary {
+    background: #f4f6fb;
+    color: #11151a;
+}
+
+.dashboard-primary small {
+    color: #59616d;
+}
+
+.dashboard-icon {
+    grid-row: 1 / span 2;
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border: 1px solid currentColor;
+    border-radius: 15px;
+    font-weight: 900;
+}
+
 @media (max-width: 720px) {
     .compact-shell {
         width: min(100% - 24px, 680px);
