@@ -4,24 +4,88 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{{ app_name }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}?v=0.6.2">
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/compact.css') }}?v=0.6.2">
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/drawer.css') }}?v=0.6.2">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}?v=0.7.0">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/compact.css') }}?v=0.7.0">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/management.css') }}?v=0.7.0">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/drawer.css') }}?v=0.7.0">
 </head>
-<body>
+<body class="app-body">
     {% include "_drawer.html" %}
-    <main class="page-shell compact-shell drawer-page home-main">
-        <header class="simple-brand home-header">
-            <h1>Oylut Clipping</h1>
+    <main class="page-shell compact-shell drawer-page home-workspace">
+        <header class="simple-brand workspace-header">
+            <span class="screen-kicker">INÍCIO</span>
+            <h1>Novo monitoramento</h1>
+            <p>Cadastre o cliente, o monitoramento e os termos em uma única etapa.</p>
         </header>
 
-        <section class="home-primary-action" aria-label="Ação principal">
-            <a class="dashboard-action dashboard-primary" href="/novo-monitoramento">
-                <span class="dashboard-icon">＋</span>
-                <strong>Novo monitoramento</strong>
-                <small>Cadastre cliente, monitoramento e termos.</small>
-            </a>
+        {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+
+        <section class="app-card workspace-form-card">
+            {% if clients %}
+            <form method="post" action="/novo-monitoramento" class="stack-form submit-lock-form">
+                <label for="client_id">Cliente</label>
+                <select id="client_id" name="client_id" required>
+                    <option value="">Selecione</option>
+                    {% for client in clients if client.is_active %}<option value="{{ client.id }}">{{ client.name }}</option>{% endfor %}
+                </select>
+
+                <label for="name">Nome do monitoramento</label>
+                <input id="name" name="name" type="text" required minlength="2" placeholder="Ex.: Institucional">
+
+                <label for="main_term">Termo principal</label>
+                <input id="main_term" name="main_term" type="text" required minlength="2" placeholder="Ex.: TCE-PB">
+
+                <label for="secondary_terms">Termos secundários <span class="optional">um por linha</span></label>
+                <textarea id="secondary_terms" name="secondary_terms" rows="5" placeholder="Tribunal de Contas da Paraíba&#10;Tribunal de Contas do Estado"></textarea>
+
+                <button type="submit" class="primary-button" data-loading-text="Criando monitoramento...">Criar monitoramento</button>
+            </form>
+            {% else %}
+            <div class="empty-state">
+                <strong>Cadastre seu primeiro cliente</strong>
+                <p>É necessário ter um cliente antes de criar o monitoramento.</p>
+                <a class="primary-action" href="/clientes">Cadastrar cliente</a>
+            </div>
+            {% endif %}
+        </section>
+
+        <section class="home-clients-section">
+            <div class="section-title-row">
+                <div>
+                    <span class="screen-kicker">GESTÃO</span>
+                    <h2>Clientes</h2>
+                </div>
+                <a href="/clientes" class="text-link">Ver todos</a>
+            </div>
+
+            {% if clients %}
+            <div class="home-client-list">
+                {% for client in clients %}
+                <a class="home-client-row" href="/clientes/{{ client.id }}">
+                    <span class="client-avatar">{{ client.name[:1]|upper }}</span>
+                    <span class="client-info">
+                        <strong>{{ client.name }}</strong>
+                        <small>{{ 'Ativo' if client.is_active else 'Inativo' }}</small>
+                    </span>
+                    <span class="row-arrow">›</span>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-compact">Nenhum cliente cadastrado.</div>
+            {% endif %}
         </section>
     </main>
+
+    <script>
+        document.querySelectorAll('.submit-lock-form').forEach((form) => {
+            form.addEventListener('submit', () => {
+                const button = form.querySelector('button[type="submit"]');
+                if (!button) return;
+                button.disabled = true;
+                button.textContent = button.dataset.loadingText || 'Processando...';
+            });
+        });
+    </script>
 </body>
 </html>
