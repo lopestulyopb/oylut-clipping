@@ -18,13 +18,15 @@ templates = Jinja2Templates(directory=BASE_DIR / "templates")
 router = APIRouter(prefix="/clippings", tags=["clippings"])
 
 
+def clipping_error_message(exc: Exception) -> str:
+    if isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code == 404:
+        return "O arquivo de clippings ainda está sendo preparado. Tente novamente após a configuração do banco de dados."
+    return "Não foi possível concluir esta ação. Tente novamente em instantes."
+
+
 @router.get("/revisar", response_class=HTMLResponse)
 async def review_page(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse(
-        request=request,
-        name="clipping_review.html",
-        context={"app_name": "Oylut Clipping"},
-    )
+    return templates.TemplateResponse(request=request, name="clipping_review.html", context={"app_name": "Oylut Clipping"})
 
 
 @router.post("", response_class=HTMLResponse)
@@ -49,47 +51,57 @@ async def create_clipping(
             client_name=client_name or None,
             monitoring_name=monitoring_name or None,
         )
-    except (ValueError, json.JSONDecodeError, httpx.HTTPError, RuntimeError) as exc:
-        return templates.TemplateResponse(
-            request=request,
-            name="clipping_review.html",
-            status_code=422,
-            context={"app_name": "Oylut Clipping", "error": str(exc)},
-        )
-    return RedirectResponse(url=f"/clippings/{clipping['id']}", status_code=303)
+    except (ValueError, json.JSONDecodeError) as exc:
+        message = str(exc)
+    except (httpx.HTTPError, RuntimeError) as exc:
+        message = clipping_error_message(exc)
+    else:
+        return RedirectResponse(url=f"/clippings/{clipping['id']}", status_code=303)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="clipping_review.html",
+        status_code=422,
+        context={"app_name": "Oylut Clipping", "error": message},
+    )
 
 
 @router.get("", response_class=HTMLResponse)
 async def clipping_history(request: Request) -> HTMLResponse:
-    error = None
+    setup_pending = False
     try:
         clippings = await clipping_service.list_clippings()
-    except (httpx.HTTPError, RuntimeError) as exc:
+    except httpx.HTTPStatusError as exc:
         clippings = []
-        error = f"Não foi possível acessar os clippings: {exc}"
+        setup_pending = exc.response.status_code == 404
+    except (httpx.HTTPError, RuntimeError):
+        clippings = []
+        setup_pending = True
     return templates.TemplateResponse(
         request=request,
         name="clippings.html",
-        context={"clippings": clippings, "error": error},
+        context={"clippings": clippings, "setup_pending": setup_pending},
     )
 
 
 @router.get("/{clipping_id}", response_class=HTMLResponse)
 async def clipping_detail(request: Request, clipping_id: str) -> HTMLResponse:
-    clipping = await clipping_service.get(clipping_id)
-    items = await clipping_service.list_items(clipping_id) if clipping else []
+    try:
+        clipping = await clipping_service.get(clipping_id)
+        items = await clipping_service.list_items(clipping_id) if clipping else []
+    except (httpx.HTTPError, RuntimeError):
+        return RedirectResponse(url="/clippings", status_code=303)
     if not clipping:
         return RedirectResponse(url="/clippings", status_code=303)
-    return templates.TemplateResponse(
-        request=request,
-        name="clipping_detail.html",
-        context={"clipping": clipping, "items": items},
-    )
+    return templates.TemplateResponse(request=request, name="clipping_detail.html", context={"clipping": clipping, "items": items})
 
 
 @router.post("/{clipping_id}/excluir")
 async def delete_clipping(clipping_id: str) -> RedirectResponse:
-    await clipping_service.delete(clipping_id)
+    try:
+        await clipping_service.delete(clipping_id)
+    except (httpx.HTTPError, RuntimeError):
+        pass
     return RedirectResponse(url="/clippings", status_code=303)
 
 
@@ -101,22 +113,12 @@ async def clipping_pdf(clipping_id: str) -> StreamingResponse:
         return StreamingResponse(io.BytesIO(b""), status_code=404, media_type="application/pdf")
 
     buffer = io.BytesIO()
-    document = SimpleDocTemplate(
-        buffer,
-        pagesize=A4,
-        rightMargin=18 * mm,
-        leftMargin=18 * mm,
-        topMargin=18 * mm,
-        bottomMargin=18 * mm,
-        title=clipping["title"],
-        author="Oylut Clipping",
-    )
+    document = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=18 * mm, leftMargin=18 * mm, topMargin=18 * mm, bottomMargin=18 * mm, title=clipping["title"], author="Oylut Clipping")
     styles = getSampleStyleSheet()
     title_style = ParagraphStyle("OylutTitle", parent=styles["Title"], fontSize=22, leading=27, spaceAfter=8)
     meta_style = ParagraphStyle("OylutMeta", parent=styles["Normal"], fontSize=9, textColor="#555555", spaceAfter=14)
     item_title = ParagraphStyle("ItemTitle", parent=styles["Heading2"], fontSize=13, leading=17, spaceAfter=5)
-    body = []
-    body.append(Paragraph(clipping["title"], title_style))
+    body = [Paragraph(clipping["title"], title_style)]
     metadata = "Oylut Clipping"
     if clipping.get("client_name"):
         metadata += f" · {clipping['client_name']}"
@@ -124,7 +126,6 @@ async def clipping_pdf(clipping_id: str) -> StreamingResponse:
         metadata += f" · {clipping['monitoring_name']}"
     metadata += f" · {len(items)} publicações"
     body.append(Paragraph(metadata, meta_style))
-
     for index, item in enumerate(items, start=1):
         body.append(Paragraph(f"{index}. {item['title']}", item_title))
         body.append(Paragraph(f"<b>Fonte:</b> {item['source']}", styles["Normal"]))
@@ -133,19 +134,10 @@ async def clipping_pdf(clipping_id: str) -> StreamingResponse:
         if item.get("published_at"):
             body.append(Paragraph(f"<b>Publicado em:</b> {item['published_at']}", styles["Normal"]))
         if item.get("excerpt"):
-            body.append(Spacer(1, 4))
-            body.append(Paragraph(item["excerpt"], styles["BodyText"]))
-        body.append(Spacer(1, 4))
-        body.append(Paragraph(f"<link href='{item['url']}' color='blue'>{item['url']}</link>", styles["Normal"]))
-        body.append(Spacer(1, 12))
+            body.extend([Spacer(1, 4), Paragraph(item["excerpt"], styles["BodyText"])])
+        body.extend([Spacer(1, 4), Paragraph(f"<link href='{item['url']}' color='blue'>{item['url']}</link>", styles["Normal"]), Spacer(1, 12)])
         if index % 5 == 0 and index < len(items):
             body.append(PageBreak())
-
     document.build(body)
     buffer.seek(0)
-    filename = f"clipping-{clipping_id}.pdf"
-    return StreamingResponse(
-        buffer,
-        media_type="application/pdf",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
-    )
+    return StreamingResponse(buffer, media_type="application/pdf", headers={"Content-Disposition": f'attachment; filename="clipping-{clipping_id}.pdf"'})
